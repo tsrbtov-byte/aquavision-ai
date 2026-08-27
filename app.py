@@ -6,15 +6,15 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 
-# 1. Page Configuration
+# 1. Səhifə Tənzimləmələri
 st.set_page_config(
-    page_title="AquaVision AI — Advanced Water Scanner",
+    page_title="AquaVision AI — Su Analiz Sistemi",
     page_icon="🌊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. Custom CSS Styling
+# 2. Xüsusi Dizayn (CSS)
 st.markdown("""
     <style>
     .stApp {
@@ -47,12 +47,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Helper function for rendering Shorts reliably
+# Shorts videolarını rəvan göstərmək üçün köməkçi funksiya
 def render_youtube_short(video_id):
     embed_url = f"https://www.youtube.com/embed/{video_id}"
     components.iframe(embed_url, height=450, scrolling=False)
 
-# 3. Comprehensive Translations Dictionary
+# 3. 100% TAM AZƏRBAYCAN DİLİ LÜĞƏTİ
 TRANSLATIONS = {
     "Azerbaijani": {
         "title": "🌊 AquaVision AI",
@@ -80,7 +80,7 @@ TRANSLATIONS = {
         "norm_turb": "Bulanıqlıq (Turbidity): < 1 NTU",
         "counter_title": "📈 Skan Statistikası",
         "purify_title": "🛠️ Fövqəladə Su Təmizləmə Üsulları",
-        "purify_bottle": "**1. Şüşə Qab Filtrinin Hazırlanması:** Plastik qabın dibini kəsin, qapağında dəlik açın və aşağıdan yuxarıya doğru sıx parça, əzilmiş kömür, incə qum, iri qum və daşları təbəqələndirin.",
+        "purify_bottle": "**1. Şüşə Qab Filtrinin Hazırlanması:** Plastik qabın dibini kəsin, qapağında dəlik açın və aşağıdan yuxarıya doğru sıx parça, əzilledilmiş kömür, incə qum, iri qum və daşları təbəqələndirin.",
         "purify_boil": "**2. Qaynatma Üsulu:** Bakteriya və mikrobları tam öldürmək üçün suyu ən azı 1-3 dəqiqə intensiv qaynadın.",
         "purify_sodis": "**3. SODIS (Günəşlə Dezinfeksiya):** Şəffaf plastik qabı su ilə doldurub 6–8 saat birbaşa günəş işığı altında saxlayın.",
         "video_section_title": "📺 Praktiki Video Təlimatlar",
@@ -107,144 +107,34 @@ TRANSLATIONS = {
         "pie_color": "Rəng Dəyişməsi / Kənar Maddə",
         "pie_pure": "Təmiz Su Payı",
         "chart_title": "Tərkib Bölgüsü (%)"
-    },
-    "English": {
-        "title": "🌊 AquaVision AI",
-        "subtitle": "Digital Water Quality Analysis & Broadened Chemical Assessment System",
-        "tab_scanner": "🔍 AI Scanner & Deep Analysis",
-        "tab_purify": "🧪 Emergency Purification",
-        "tab_catalog": "🌍 Global Water Catalog",
-        "tab_prevent": "🛡️ Pollution Prevention",
-        "input_method": "Choose Input Method:",
-        "upload_gallery": "📁 Gallery Upload",
-        "use_camera": "📷 Camera Capture",
-        "upload_label": "Upload water sample image",
-        "camera_label": "Snap photo of water sample",
-        "analyze_btn": "Run AI Analysis",
-        "results_header": "📊 Analysis Results & Overview",
-        "purity_score": "Purity Score",
-        "clean_status": "Status: SAFE DRINKING WATER",
-        "warning_status": "Status: CONTAMINATED WATER DETECTED",
-        "chat_title": "🤖 AquaAI Assistant",
-        "chat_placeholder": "Ask about water parameters, filtration, or chemistry...",
-        "sidebar_nav": "📌 Dashboard & Tools",
-        "quick_norms": "📊 Standard Drinking Water Norms",
-        "norm_ph": "Ideal pH Range: 6.5 - 8.5",
-        "norm_tds": "Max TDS Limit: < 500 ppm",
-        "norm_turb": "Turbidity Limit: < 1 NTU",
-        "counter_title": "📈 Scan Analytics",
-        "purify_title": "🛠️ Emergency Water Purification Methods",
-        "purify_bottle": "**1. DIY Bottle Sediment Filter:** Cut a bottle in half, poke a hole in the cap, and layer from bottom to top: fine cloth/cotton, crushed charcoal, fine sand, coarse sand, and pebbles.",
-        "purify_boil": "**2. Rolling Boil:** Boil water vigorously for 1-3 minutes to eliminate all pathogens.",
-        "purify_sodis": "**3. SODIS (Solar Disinfection):** Place clear PET bottles filled with water in direct sunlight for 6–8 hours.",
-        "video_section_title": "📺 Practical Video Guides",
-        "video_1_title": "🥤 How to Make a DIY Water Filter",
-        "video_2_title": "☀️ Solar Water Disinfection (SODIS Method)",
-        "catalog_title": "🌍 Earth's Water Distribution Catalog",
-        "cat_type": "Water Type",
-        "cat_share": "Share of Earth's Water (%)",
-        "cat_char": "Key Characteristics",
-        "cat_row1_type": "Saline Oceans & Seas",
-        "cat_row1_char": "High Salinity (~35 g/L), Pacific, Atlantic, Caspian Sea",
-        "cat_row2_type": "Glaciers & Ice Caps",
-        "cat_row2_char": "Locked fresh water reserves in Antarctica and Greenland",
-        "cat_row3_type": "Groundwater Aquifers",
-        "cat_row3_char": "Subterranean fresh water reservoirs used for agricultural supply",
-        "cat_row4_type": "Surface Fresh Water",
-        "cat_row4_char": "Lakes, rivers, and wetlands (Primary source for direct human supply)",
-        "prevent_title": "🛡️ Environmental Protection & Prevention Tips",
-        "prevent_1": "• **Riparian Buffer Zones:** Plant native vegetation along riverbanks to absorb agricultural runoff and prevent erosion.",
-        "prevent_2": "• **Waste Control:** Prevent direct disposal of untreated industrial chemicals and municipal sewage into water bodies.",
-        "prevent_3": "• **Subterranean Aquifer Protection:** Reduce synthetic pesticide application to preserve groundwater quality.",
-        "pie_dust": "Dust / Suspended Solids",
-        "pie_turb": "Turbidity / Sediment",
-        "pie_color": "Discoloration / Organic Residuals",
-        "pie_pure": "Pure Water Share",
-        "chart_title": "Composition Breakdown (%)"
-    },
-    "Russian": {
-        "title": "🌊 AquaVision AI",
-        "subtitle": "Цифровая Система Анализа Качества Воды и Расширенной Химии",
-        "tab_scanner": "🔍 AI Сканер и Глубокий Анализ",
-        "tab_purify": "🧪 Аварийная Очистка",
-        "tab_catalog": "🌍 Каталог Водных Ресурсов",
-        "tab_prevent": "🛡️ Защита Экологии",
-        "input_method": "Выберите способ ввода:",
-        "upload_gallery": "📁 Загрузить из галереи",
-        "use_camera": "📷 Сделать фото",
-        "upload_label": "Загрузите образец воды",
-        "camera_label": "Сделайте снимок образца",
-        "analyze_btn": "Запустить AI Анализ",
-        "results_header": "📊 Результаты Анализа и Обзор",
-        "purity_score": "Индекс Чистоты",
-        "clean_status": "Статус: БЕЗОПАСНАЯ ПИТЬЕВАЯ ВОДА",
-        "warning_status": "Статус: ОБНАРУЖЕНА ГРЯЗНАЯ ВОДА",
-        "chat_title": "🤖 AquaAI Помощник",
-        "chat_placeholder": "Задайте вопрос о параметрах воды, фильтрации...",
-        "sidebar_nav": "📌 Панель и Инструменты",
-        "quick_norms": "📊 Стандарты Питьевой Воды",
-        "norm_ph": "Идеальный pH: 6.5 - 8.5",
-        "norm_tds": "Макс. уровень TDS: < 500 ppm",
-        "norm_turb": "Мутность (Turbidity): < 1 NTU",
-        "counter_title": "📈 Статистика Сканирования",
-        "purify_title": "🛠️ Аварийные Методы Очистки Воды",
-        "purify_bottle": "**1. Самодельный Фильтр из Бутылки:** Отрежьте дно бутылки, сделайте отверстие в крышке и уложите слои снизу вверх: ткань, измельченный уголь, мелкий песок, крупный песок, галька.",
-        "purify_boil": "**2. Кипячение:** Интенсивно кипятите воду 1-3 минуты для полного уничтожения патогенов.",
-        "purify_sodis": "**3. SODIS (Солнечная Дезинфекция):** Наполните прозрачные ПЭТ-бутылки водой и оставьте на солнце на 6–8 часов.",
-        "video_section_title": "📺 Практические Видеоинструкции",
-        "video_1_title": "🥤 Как сделать фильтр для воды своими руками",
-        "video_2_title": "☀️ Солнечная дезинфекция воды (Метод SODIS)",
-        "catalog_title": "🌍 Каталог Распределения Воды на Земле",
-        "cat_type": "Тип Воды",
-        "cat_share": "Доля на Земле (%)",
-        "cat_char": "Основные Характеристики",
-        "cat_row1_type": "Соленые Океаны и Моря",
-        "cat_row1_char": "Высокая соленость (~35 г/л), Тихий, Атлантический, Каспийское море",
-        "cat_row2_type": "Ледники и Ледяные Шапки",
-        "cat_row2_char": "Запасы пресной воды в Антарктиде и Гренландии",
-        "cat_row3_type": "Подземные Водоносные Горизонты",
-        "cat_row3_char": "Подземные резервуары пресной воды для сельского хозяйства",
-        "cat_row4_type": "Поверхностные Пресные Воды",
-        "cat_row4_char": "Озера, реки и болота (Основной источник для человека)",
-        "prevent_title": "🛡️ Предотвращение Загрязнения Окружающей Среды",
-        "prevent_1": "• **Буферные Зоны:** Посадка растений вдоль берегов рек предотвращает смыв сельскохозяйственных отходов.",
-        "prevent_2": "• **Контроль Сбросов:** Исключение прямого сброса неочищенных промышленных и бытовых стоков.",
-        "prevent_3": "• **Защита Подземных Вод:** Сокращение использования пестицидов для защиты водоносных горизонтов.",
-        "pie_dust": "Пыль / Взвешенные частицы",
-        "pie_turb": "Мутность / Осадок",
-        "pie_color": "Изменение цвета / Органика",
-        "pie_pure": "Чистая Вода",
-        "chart_title": "Состав Образца (%)"
     }
 }
 
 if "scan_count" not in st.session_state:
     st.session_state.scan_count = 0
 
-# 4. Sidebar Configuration
-selected_lang = st.sidebar.selectbox("Language / DİL", ["Azerbaijani", "English", "Russian"])
-t = TRANSLATIONS[selected_lang]
+t = TRANSLATIONS["Azerbaijani"]
 
-st.sidebar.markdown("---")
+# 4. Sol Panel (Sidebar) Tənzimləmələri
 st.sidebar.subheader(t["sidebar_nav"])
 st.sidebar.markdown(f"### {t['quick_norms']}")
 st.sidebar.info(f"• {t['norm_ph']}\n• {t['norm_tds']}\n• {t['norm_turb']}")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"### {t['counter_title']}")
-st.sidebar.metric(label="", value=f"{st.session_state.scan_count}")
+st.sidebar.metric(label="Umumi Skan Sayı", value=f"{st.session_state.scan_count}")
 
-# 5. Main Layout Split (80% Main Area, 20% AI Assistant Chat)
+# 5. Ekran Bölgüsü (80% Əsas Sahə, 20% Sağ Panel - Çat və Terminlər)
 main_col, ai_col = st.columns([0.8, 0.2], gap="medium")
 
-# --- MAIN SCREEN (80%) ---
+# --- ƏSAS EKRAN (80%) ---
 with main_col:
     st.title(t["title"])
     st.caption(t["subtitle"])
     
     tabs = st.tabs([t["tab_scanner"], t["tab_purify"], t["tab_catalog"], t["tab_prevent"]])
     
-    # --- TAB 1: ADVANCED AI SCANNER & CHEMICAL ANALYSIS ---
+    # --- TAB 1: AI SKANER & KİMYƏVİ ANALİZ ---
     with tabs[0]:
         option = st.radio(t["input_method"], (t["upload_gallery"], t["use_camera"]), horizontal=True)
         image_file = None
@@ -255,12 +145,12 @@ with main_col:
             
         if image_file is not None:
             img_pil = Image.open(image_file)
-            st.image(img_pil, caption="Water Sample", use_container_width=True)
+            st.image(img_pil, caption="Su Nümayəsi Şəkli", use_container_width=True)
             
             if st.button(t["analyze_btn"], use_container_width=True):
                 st.session_state.scan_count += 1
                 
-                # Computer Vision Calculations
+                # Kompüter Görməsi (Computer Vision) Hesablamaları
                 img_np = np.array(img_pil.convert('RGB'))
                 img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
                 
@@ -269,7 +159,7 @@ with main_col:
                 edges = cv2.Canny(blur, 50, 150)
                 edge_density = (np.count_nonzero(edges) / edges.size) * 100
                 
-                hsv = cv2.cvtColor(img_bgr, cv2.COLOR_HSV2BGR) if False else cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+                hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
                 saturation = np.mean(hsv[:, :, 1]) / 255.0 * 100
                 brightness_std = np.std(hsv[:, :, 2])
                 
@@ -280,31 +170,30 @@ with main_col:
                 turbidity_pct = round(min(50.0, (brightness_std / 128.0) * 100), 2)
                 minerals_pct = round(min(50.0, saturation), 2)
                 
-                # --- SECTION 1: MAIN OVERVIEW & HUMAN POTABILITY ---
+                # --- HİSSƏ 1: ƏSAS XÜLASƏ VƏ İNSAN İSTİFADƏSİ İMKANI ---
                 st.subheader(t["results_header"])
                 if purity >= 75.0:
                     st.success(t["clean_status"])
                 else:
                     st.error(t["warning_status"])
                 
-                # Human Consumption Metrics (Key Request 1)
                 m1, m2, m3 = st.columns(3)
                 if purity >= 85.0:
-                    m1.metric("👥 Human Drinkability Capacity", "5 - 10 Persons / Day", "Safe Direct Intake")
-                    m2.metric("🦠 Microbial Pathogen Level", "Low (< 0.1 CFU/mL)", "Normal")
-                    m3.metric("💧 Daily Consumption Suitability", "100%", "Excellent")
+                    m1.metric("👥 İçə Biləcək İnsan Sayı", "5 - 10 Nəfər / Gün", "Təhlükəsiz")
+                    m2.metric("🦠 Mikrobioloji Risk", "Çox Aşağı (< 0.1 CFU/mL)", "Normal")
+                    m3.metric("💧 Gündəlik Qəbul Yararlılığı", "100%", "Əla Səviyyədə")
                 elif purity >= 60.0:
-                    m1.metric("👥 Human Drinkability Capacity", "Conditional (Boil First)", "Needs Processing")
-                    m2.metric("🦠 Microbial Pathogen Level", "Moderate Risk", "Action Required")
-                    m3.metric("💧 Daily Consumption Suitability", "40%", "Boil 3 mins")
+                    m1.metric("👥 İçə Biləcək İnsan Sayı", "Şərtli (Qaynatsanız)", "Emal Olunmalıdır")
+                    m2.metric("🦠 Mikrobioloji Risk", "Orta Riskli", "Qaynatma Şərtdir")
+                    m3.metric("💧 Gündəlik Qəbul Yararlılığı", "40%", "1-3 dəq qaynadın")
                 else:
-                    m1.metric("👥 Human Drinkability Capacity", "0 Persons (Unsafe)", "High Risk")
-                    m2.metric("🦠 Microbial Pathogen Level", "Severe / High Bacterial Risk", "Hazardous")
-                    m3.metric("💧 Daily Consumption Suitability", "0%", "Filtration Required")
+                    m1.metric("👥 İçə Biləcək İnsan Sayı", "0 Nəfər (İçmək Yolverilməzdir)", "Yüksək Təhlükə")
+                    m2.metric("🦠 Mikrobioloji Risk", "Ciddi Bakterioloji Risk", "Təhlükəli")
+                    m3.metric("💧 Gündəlik Qəbul Yararlılığı", "0%", "Filtrasiya Lazımdır")
                 
                 st.markdown("---")
                 
-                # Visual Charts
+                # Qrafiklər
                 chart_col1, chart_col2 = st.columns(2)
                 with chart_col1:
                     fig_gauge = go.Figure(go.Indicator(
@@ -333,62 +222,61 @@ with main_col:
                 
                 st.markdown("---")
                 
-                # --- SECTION 2: SPECIFIC DIRT & CUSTOM PURIFICATION GUIDE (Key Request 2 & 3) ---
+                # --- HİSSƏ 2: AŞKAR OLUNAN ÇİRK NÖVLƏRİ VƏ ÖZƏL TƏMİZLƏMƏ addımları ---
                 c_dir1, c_dir2 = st.columns(2)
                 
                 with c_dir1:
-                    st.markdown("### 🟤 Detected Contaminants & Dirt Types")
+                    st.markdown("### 🟤 Aşkar Olunan Çirkləndirici Növləri")
                     dirt_list = []
                     if dust_pct > 5.0:
-                        dirt_list.append("• **Suspended Micro-particles / Dust:** Floating debris affecting visual clarity.")
+                        dirt_list.append("• **Sərbəst Mikro-zərrəciklər / Toz:** Vizual şəffaflığı azaldan toz parçaları.")
                     if turbidity_pct > 10.0:
-                        dirt_list.append("• **Silt & Clay Sediment:** Fine soil particles causing high cloudiness.")
+                        dirt_list.append("• **Çöküntü və Mil Zərrələri:** Suya bulanıqlıq verən narın torpaq hissəcikləri.")
                     if minerals_pct > 15.0:
-                        dirt_list.append("• **Organic Residuals & Algae Traces:** Organic tint suggesting biological activity.")
+                        dirt_list.append("• **Üzvi Qalıqlar / Yosun İzləri:** Suda üzvi maddə dəyişikliyini göstərən çalarlar.")
                     if purity < 50.0:
-                        dirt_list.append("• **Heavy Bacterial Contamination Risk:** High risk of E. Coli and protozoa.")
+                        dirt_list.append("• **Yüksək Bakterioloji Risk:** E. Coli və patogen mikroorqanizm riski.")
                     
                     if not dirt_list:
-                        st.info("No significant coarse dirt or excessive particulate matter detected.")
+                        st.info("Nümayədə qabarıq çirk və ya iri zərrəciklər aşkar edilmədi.")
                     else:
                         for d in dirt_list:
                             st.write(d)
                             
                 with c_dir2:
-                    st.markdown("### 🛠️ Customized Purification Steps for This Sample")
+                    st.markdown("### 🛠️ Bu Nümayə Üçün Xüsusi Təmizləmə Addımları")
                     if purity >= 85.0:
-                        st.success("1. **Direct Consumption:** Sample passes basic visual clarity standards.\n2. **Optional Carbon Filter:** Use standard pitcher filter for taste enhancement.")
+                        st.success("1. **Birbaşa İstfadə:** Su şəffaflıq normasına uyğundur.\n2. **Kömür Filtrasiyası:** Dadı daha yaxşılaşdırmaq üçün adi məişət filtrindən keçirə bilərsiniz.")
                     elif purity >= 60.0:
-                        st.warning("1. **Coarse Cloth Strain:** Run water through fine cotton cloth.\n2. **Boil Water:** Vigorous boiling for 3 minutes is required to eliminate microbes.")
+                        st.warning("1. **Süzgəcdən Geçirmə:** Suyu sıx parçadan süzərək iri zərrələri ayırın.\n2. **Qaynatma:** Mikrobları məhv etmək üçün suyu ən azı 3 dəqiqə intensiv qaynadın.")
                     else:
-                        st.error("1. **DIY Multi-Layer Bottle Filter:** Build sand, charcoal, and pebble layers.\n2. **Sediment Settlement:** Allow sample to sit for 2 hours.\n3. **Boiling & SODIS:** Boil for 5 minutes or leave in direct sunlight for 8+ hours.")
+                        st.error("1. **Çox-təbəqəli Filtr:** Kömür, qum və daş təbəqəli plastik filtrdən keçirin.\n2. **Çökdürülmə:** Suyu 2 saat sakit saxlayın ki, çöküntü dibə çöksün.\n3. **İntensiv Qaynatma / SODIS:** Suyu 5 dəqiqə qaynadın və ya 8 saat günəş altında saxlayın.")
 
                 st.markdown("---")
                 
-                # --- SECTION 3: BROADENED CHEMICAL ASSESSMENT (Key Request 4) ---
-                st.markdown("### 🧪 Broadened Chemical & Physical Parameter Analysis")
-                st.caption("Estimated chemical parameters derived through visual processing and optical spectrophotometry modeling.")
+                # --- HİSSƏ 3: GENİŞLƏNDİRİLMİŞ KİMYƏVİ GÖSTƏRİCİLƏR ---
+                st.markdown("### 🧪 Genişləndirilmiş Kimyəvi və Fiziki Analiz")
+                st.caption("Optik spektrofotometriya modelləşdirilməsi ilə təyin olunmuş kimyəvi göstəricilər.")
                 
-                # Estimated Values
                 est_ph = round(6.5 + (saturation / 100.0) * 2.0 - (turbidity_pct / 100.0) * 1.0, 2)
                 est_tds = int(120 + (saturation * 5) + (dust_pct * 8))
                 est_turb_ntu = round(0.5 + (turbidity_pct * 0.2), 2)
                 
                 ch_col1, ch_col2, ch_col3 = st.columns(3)
-                ch_col1.metric("Estimated pH Level", f"{est_ph}", "Optimal: 6.5 - 8.5")
-                ch_col2.metric("Total Dissolved Solids (TDS)", f"{est_tds} ppm", "Optimal: < 500 ppm")
-                ch_col3.metric("Turbidity (NTU)", f"{est_turb_ntu} NTU", "Optimal: < 1.0 NTU")
+                ch_col1.metric("Proqnoz pH Səviyyəsi", f"{est_ph}", "İdeal: 6.5 - 8.5")
+                ch_col2.metric("Ümumi Həll Olunmuş Bərk Maddələr (TDS)", f"{est_tds} ppm", "İdeal: < 500 ppm")
+                ch_col3.metric("Bulanıqlıq (NTU)", f"{est_turb_ntu} NTU", "İdeal: < 1.0 NTU")
                 
-                st.markdown("#### Detailed Chemical Profile Breakdown")
+                st.markdown("#### Ətraflı Kimyəvi Göstəricilər Cədvəli")
                 chem_table_data = {
-                    "Parameter / Ion": ["pH Level", "Total Dissolved Solids (TDS)", "Turbidity", "Heavy Metal Risk (Pb/Fe/Cu)", "Nitrates & Nitrites (NO3-/NO2-)", "Dissolved Oxygen (DO)"],
-                    "Estimated Value": [f"{est_ph}", f"{est_tds} mg/L", f"{est_turb_ntu} NTU", "Low" if purity > 70 else "Moderate/High", "< 10 mg/L", "6.5 mg/L"],
-                    "WHO Standard Limit": ["6.5 – 8.5", "< 500 mg/L", "< 1.0 NTU", "< 0.01 mg/L", "< 50 mg/L", "> 5.0 mg/L"],
-                    "Chemical Status": ["Normal" if 6.5 <= est_ph <= 8.5 else "Sub-optimal", "Acceptable" if est_tds < 500 else "Elevated", "Clear" if est_turb_ntu < 1.0 else "Cloudy", "Safe" if purity > 70 else "Action Recommended", "Safe", "Optimal"]
+                    "Parametr / İon": ["pH Səviyyəsi", "Ümumi Həll Olunmuş Maddələr (TDS)", "Bulanıqlıq (Turbidity)", "Ağır Metal Riski (Pb/Fe/Cu)", "Nitrat və Nitritlər (NO3-/NO2-)", "Həll Olunmuş Oksigen (DO)"],
+                    "Təxmini Qiymət": [f"{est_ph}", f"{est_tds} mq/L", f"{est_turb_ntu} NTU", "Aşağı" if purity > 70 else "Orta/Yüksək", "< 10 mq/L", "6.5 mq/L"],
+                    "ÜST Standart Limiti": ["6.5 – 8.5", "< 500 mq/L", "< 1.0 NTU", "< 0.01 mq/L", "< 50 mq/L", "> 5.0 mq/L"],
+                    "Kimyəvi Status": ["Normal" if 6.5 <= est_ph <= 8.5 else "Kənaraçıxma var", "Qəbul olunandır" if est_tds < 500 else "Yüksək", "Təmiz" if est_turb_ntu < 1.0 else "Bulanıq", "Təhlükəsiz" if purity > 70 else "Təmizlənməlidir", "Təhlükəsiz", "Əla"]
                 }
                 st.table(chem_table_data)
 
-    # --- TAB 2: EMERGENCY PURIFICATION & YOUTUBE SHORTS PLAYERS ---
+    # --- TAB 2: FÖVQƏLADƏ TƏMİZLƏMƏ ---
     with tabs[1]:
         st.subheader(t["purify_title"])
         st.write(t["purify_bottle"])
@@ -401,15 +289,13 @@ with main_col:
         v_col1, v_col2 = st.columns(2)
         with v_col1:
             st.markdown(f"**{t['video_1_title']}**")
-            # Using custom iframe embed wrapper for YouTube Shorts ID WW8RqmBPlxo
             render_youtube_short("WW8RqmBPlxo")
             
         with v_col2:
             st.markdown(f"**{t['video_2_title']}**")
-            # Using custom iframe embed wrapper for YouTube Shorts ID X3GA1tfWdN0
             render_youtube_short("X3GA1tfWdN0")
 
-    # --- TAB 3: WATER CATALOG ---
+    # --- TAB 3: SU KATALOQU ---
     with tabs[2]:
         st.subheader(t["catalog_title"])
         catalog_data = {
@@ -419,21 +305,21 @@ with main_col:
         }
         st.table(catalog_data)
 
-    # --- TAB 4: POLLUTION PREVENTION ---
+    # --- TAB 4: QORUNMA TƏDBİRLƏRİ ---
     with tabs[3]:
         st.subheader(t["prevent_title"])
         st.write(t["prevent_1"])
         st.write(t["prevent_2"])
         st.write(t["prevent_3"])
 
-# --- RIGHT SIDE AI ASSISTANT CHAT (20%) ---
+# --- SAĞ PANEL (20%): ÇAT VƏ TERMİNLƏR lÜĞƏTİ ---
 with ai_col:
     st.subheader(t["chat_title"])
     st.caption("AquaVision Engine")
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Salam! Mən AquaAI assistantıyam. Su analizləri və fiziki göstəricilər haqqında nə sualınız var?"}
+            {"role": "assistant", "content": "Salam! Mən AquaAI köməkçisiyəm. Su analizləri, kimyəvi göstəricilər və ya filterləmə haqqında soruşun!"}
         ]
         
     for message in st.session_state.messages:
@@ -448,9 +334,9 @@ with ai_col:
         query = user_input.lower()
         if "ph" in query:
             response = "İçməli su üçün təhlükəsiz pH dərəcəsi 6.5 və 8.5 aralığındadır."
-        elif "bulan" in query or "turbid" in query or "cloudy" in query:
+        elif "bulan" in query or "turbid" in query:
             response = "Bulanıqlıq suda asılı hissəciklərin miqdarını göstərir və NTU vahidi ilə ölçülür."
-        elif "təmiz" in query or "saf" in query or "clean" in query:
+        elif "təmiz" in query or "saf" in query:
             response = "Təmiz su şəffaf, qoxusuz olmalı, mikroblardan və ağır metallardan azad olmalıdır."
         else:
             response = f"'{user_input}' haqqında: Su analizində şəffaflıq, mineral sıxlığı və hissəciklərin paylanması əsas keyfiyyət göstəriciləridir."
@@ -458,3 +344,32 @@ with ai_col:
         st.session_state.messages.append({"role": "assistant", "content": response})
         with st.chat_message("assistant"):
             st.write(response)
+
+    st.markdown("---")
+    
+    # KƏNARDAN BOŞLUQLARI DOLDURAN 8 QISA VƏ ANLAŞIQLI KİMYƏVİ/FİZİKİ TERMİN
+    st.markdown("### 📚 Əsas Su Terminləri")
+    
+    with st.expander("1. pH Dərəcəsi", expanded=False):
+        st.caption("Suyun turşuluq və ya qələvilik dərəcəsini ölçür (0-14 skalası). İçməli su üçün norması 6.5 - 8.5-dir.")
+        
+    with st.expander("2. TDS (Minerallaşma)", expanded=False):
+        st.caption("Suda həll olmuş ümumi duz və mineralların miqdarıdır (mq/L və ya ppm). Norması < 500 ppm hesab olunur.")
+        
+    with st.expander("3. Bulanıqlıq (NTU)", expanded=False):
+        st.caption("Suya çöküntü, qum və üzvi maddələrin verdiyi tutqunluq dərəcəsidir. Norması 1 NTU-dan az olmalıdır.")
+        
+    with st.expander("4. Ağır Metallar", expanded=False):
+        st.caption("Qurğuşun (Pb), civə (Hg) və mis (Cu) kimi insan orqanizmi üçün zəhərli olan yüksək sıxlıqlı metallardır.")
+        
+    with st.expander("5. SODIS Üsulu", expanded=False):
+        st.caption("Günəşin ultrabənövşəyi (UV) şüaları ilə suyu şəffaf PET butulkalarda dezinfeksiya etmək metodudur.")
+        
+    with st.expander("6. Nitrat və Nitritlər", expanded=False):
+        st.caption("Kənd təsərrüfatı gübrələrindən suya sızan və insan sağlığına zərər verən kimyəvi birləşmələrdir.")
+        
+    with st.expander("7. Patogenlər", expanded=False):
+        st.caption("Suda xəstəlik törədən bakteriya, virus və ya parazitlərdir (məsələn, E. Coli bakteriyası).")
+        
+    with st.expander("8. Həll Olunmuş Oksigen", expanded=False):
+        st.caption("Suda həll olan və su ekosisteminin, canlılığın saxlanması üçün vacib olan oksigen (O2) miqdarıdır.")
