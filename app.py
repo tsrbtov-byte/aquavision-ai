@@ -322,13 +322,13 @@ with main_col:
         v_col1, v_col2 = st.columns(2)
         with v_col1:
             st.markdown(f"**{t['video_1_title']}**")
-            # DIY Water Filter Video Linki
-            st.video("https://www.youtube.com/watch?v=al0_S7p9Gms")
+            # Əlaltı vasitələrlə filtr hazırlanması videosu
+            st.video("https://youtube.com/shorts/WW8RqmBPlxo?si=GhvZ0TCBuYEiZFpu")
             
         with v_col2:
             st.markdown(f"**{t['video_2_title']}**")
-            # SODIS Solar Disinfection Video Linki
-            st.video("https://www.youtube.com/watch?v=0hK2eLThp1s")
+            # SODIS Solar Disinfection videosu
+            st.video("https://youtube.com/shorts/X3GA1tfWdN0?si=l0zp_MRS0VWPGrQj")
 
     # --- TAB 3: SU KATALOQU ---
     with tabs[2]:
