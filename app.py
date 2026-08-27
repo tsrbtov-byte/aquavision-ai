@@ -73,11 +73,13 @@ TRANSLATIONS = {
         "norm_tds": "Maksimum TDS: < 500 ppm",
         "norm_turb": "Bulanıqlıq (Turbidity): < 1 NTU",
         "counter_title": "📈 Skan Statistikası",
-        "counter_text": "Bu seansda analiz edildi: ",
         "purify_title": "🛠️ Fövqəladə Su Təmizləmə Üsulları",
         "purify_bottle": "**1. Şüşə Qab Filtrinin Hazırlanması:** Plastik qabın dibini kəsin, qapağında dəlik açın və aşağıdan yuxarıya doğru sıx parça, əzilmiş kömür, incə qum, iri qum və daşları təbəqələndirin.",
         "purify_boil": "**2. Qaynatma Üsulu:** Bakteriya və mikrobları tam öldürmək üçün suyu ən azı 1 dəqiqə intensiv qaynadın.",
         "purify_sodis": "**3. SODIS (Günəşlə Dezinfeksiya):** Şəffaf plastik qabı su ilə doldurub 6–8 saat birbaşa günəş işığı altında saxlayın.",
+        "video_section_title": "📺 Praktiki Video Təlimatlar",
+        "video_1_title": "🥤 Əlaltı Vasitələrlə Su Filtrinin Hazırlanması",
+        "video_2_title": "☀️ Günəş Enerjisi ilə Su Dezinfeksiyası (SODIS)",
         "catalog_title": "🌍 Yer Kürəsinin Su Paylanması Kataloqu",
         "cat_type": "Su Növü",
         "cat_share": "Yer Kürəsində Payı (%)",
@@ -125,11 +127,13 @@ TRANSLATIONS = {
         "norm_tds": "Max TDS Limit: < 500 ppm",
         "norm_turb": "Turbidity Limit: < 1 NTU",
         "counter_title": "📈 Scan Analytics",
-        "counter_text": "Samples analyzed in this session: ",
         "purify_title": "🛠️ Emergency Water Purification Methods",
         "purify_bottle": "**1. DIY Bottle Sediment Filter:** Cut a bottle in half, poke a hole in the cap, and layer from bottom to top: fine cloth/cotton, crushed charcoal, fine sand, coarse sand, and pebbles.",
         "purify_boil": "**2. Rolling Boil:** Boil water vigorously for at least 1 full minute to eliminate all pathogens.",
         "purify_sodis": "**3. SODIS (Solar Disinfection):** Place clear PET bottles filled with water in direct sunlight for 6–8 hours.",
+        "video_section_title": "📺 Practical Video Guides",
+        "video_1_title": "🥤 How to Make a DIY Water Filter",
+        "video_2_title": "☀️ Solar Water Disinfection (SODIS Method)",
         "catalog_title": "🌍 Earth's Water Distribution Catalog",
         "cat_type": "Water Type",
         "cat_share": "Share of Earth's Water (%)",
@@ -177,11 +181,13 @@ TRANSLATIONS = {
         "norm_tds": "Макс. уровень TDS: < 500 ppm",
         "norm_turb": "Мутность (Turbidity): < 1 NTU",
         "counter_title": "📈 Статистика Сканирования",
-        "counter_text": "Проанализировано за сессию: ",
         "purify_title": "🛠️ Аварийные Методы Очистки Воды",
         "purify_bottle": "**1. Самодельный Фильтр из Бутылки:** Отрежьте дно бутылки, сделайте отверстие в крышке и уложите слои снизу вверх: ткань, измельченный уголь, мелкий песок, крупный песок, галька.",
         "purify_boil": "**2. Кипячение:** Интенсивно кипятите воду не менее 1 минуты для полного уничтожения патогенов.",
         "purify_sodis": "**3. SODIS (Солнечная Дезинфекция):** Наполните прозрачные ПЭТ-бутылки водой и оставьте на солнце на 6–8 часов.",
+        "video_section_title": "📺 Практические Видеоинструкции",
+        "video_1_title": "🥤 Как сделать фильтр для воды своими руками",
+        "video_2_title": "☀️ Солнечная дезинфекция воды (Метод SODIS)",
         "catalog_title": "🌍 Каталог Распределения Воды на Земле",
         "cat_type": "Тип Воды",
         "cat_share": "Доля на Земле (%)",
@@ -303,12 +309,26 @@ with main_col:
                     fig_pie.update_layout(height=280, margin=dict(l=20, r=20, t=40, b=20), paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"))
                     st.plotly_chart(fig_pie, use_container_width=True)
 
-    # --- TAB 2: FÖVQƏLADƏ TƏMİZLƏMƏ ---
+    # --- TAB 2: FÖVQƏLADƏ TƏMİZLƏMƏ (VİDEOLAR İLƏ) ---
     with tabs[1]:
         st.subheader(t["purify_title"])
         st.write(t["purify_bottle"])
         st.write(t["purify_boil"])
         st.write(t["purify_sodis"])
+        
+        st.markdown("---")
+        st.subheader(t["video_section_title"])
+        
+        v_col1, v_col2 = st.columns(2)
+        with v_col1:
+            st.markdown(f"**{t['video_1_title']}**")
+            # DIY Water Filter Video Linki
+            st.video("https://www.youtube.com/watch?v=al0_S7p9Gms")
+            
+        with v_col2:
+            st.markdown(f"**{t['video_2_title']}**")
+            # SODIS Solar Disinfection Video Linki
+            st.video("https://www.youtube.com/watch?v=0hK2eLThp1s")
 
     # --- TAB 3: SU KATALOQU ---
     with tabs[2]:
