@@ -4,17 +4,17 @@ import numpy as np
 from PIL import Image
 import plotly.express as px
 import plotly.graph_objects as go
-import streamlit.components.v1 as components
+import os
 
 # 1. Səhifə Tənzimləmələri
 st.set_page_config(
-    page_title="AquaVision AI — Su Analiz Sistemi",
+    page_title="AquaVision AI — Offline Su Analiz Sistemi",
     page_icon="🌊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. Xüsusi Dizayn (CSS)
+# 2. Xüsusi Offline CSS (Xarici drayver və ikonlardan asılı deyil)
 st.markdown("""
     <style>
     .stApp {
@@ -47,94 +47,85 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Shorts videolarını rəvan göstərmək üçün köməkçi funksiya
-def render_youtube_short(video_id):
-    embed_url = f"https://www.youtube.com/embed/{video_id}"
-    components.iframe(embed_url, height=450, scrolling=False)
-
-# 3. 100% TAM AZƏRBAYCAN DİLİ LÜĞƏTİ
+# 3. MƏTN VƏ LÜĞƏT BÖLMƏSİ
 TRANSLATIONS = {
-    "Azerbaijani": {
-        "title": "🌊 AquaVision AI",
-        "subtitle": "Rəqəmsal Su Keyfiyyəti Analizi və Genişləndirilmiş Kimyəvi Bilik Sistemi",
-        "tab_scanner": "🔍 AI Skaner & Dərin Analiz",
-        "tab_purify": "🧪 Fövqəladə Təmizləmə",
-        "tab_catalog": "🌍 Qlobal Su Kataloqu",
-        "tab_prevent": "🛡️ Çirklənmənin Qarşısının Alınması",
-        "input_method": "Daxiletmə Üsulunu Seçin:",
-        "upload_gallery": "📁 Qalereyadan Yüklə",
-        "use_camera": "📷 Kameradan Çək",
-        "upload_label": "Su nümayəsi şəklini yükləyin",
-        "camera_label": "Su nümayəsinin şəklini çəkin",
-        "analyze_btn": "Süni İntellekt Analizini Başlat",
-        "results_header": "📊 Analiz Nəticələri və Xülasə",
-        "purity_score": "Təmizlik Dərəcəsi",
-        "clean_status": "Status: TƏMİZ VƏ İÇMƏYƏ YARARLI SU",
-        "warning_status": "Status: ÇİRKLƏNMİŞ SU AŞKAR EDİLDİ",
-        "chat_title": "🤖 AquaAI Köməkçisi",
-        "chat_placeholder": "Su, kimya və ya filterləmə haqqında soruşun...",
-        "sidebar_nav": "📌 Panel və Alətlər",
-        "quick_norms": "📊 Standart İçməli Su Normaları",
-        "norm_ph": "İdeal pH Səviyyəsi: 6.5 - 8.5",
-        "norm_tds": "Maksimum TDS: < 500 ppm",
-        "norm_turb": "Bulanıqlıq (Turbidity): < 1 NTU",
-        "counter_title": "📈 Skan Statistikası",
-        "purify_title": "🛠️ Fövqəladə Su Təmizləmə Üsulları",
-        "purify_bottle": "**1. Şüşə Qab Filtrinin Hazırlanması:** Plastik qabın dibini kəsin, qapağında dəlik açın və aşağıdan yuxarıya doğru sıx parça, əzilledilmiş kömür, incə qum, iri qum və daşları təbəqələndirin.",
-        "purify_boil": "**2. Qaynatma Üsulu:** Bakteriya və mikrobları tam öldürmək üçün suyu ən azı 1-3 dəqiqə intensiv qaynadın.",
-        "purify_sodis": "**3. SODIS (Günəşlə Dezinfeksiya):** Şəffaf plastik qabı su ilə doldurub 6–8 saat birbaşa günəş işığı altında saxlayın.",
-        "video_section_title": "📺 Praktiki Video Təlimatlar",
-        "video_1_title": "🥤 Əlaltı Vasitələrlə Su Filtrinin Hazırlanması",
-        "video_2_title": "☀️ Günəş Enerjisi ilə Su Dezinfeksiyası (SODIS)",
-        "catalog_title": "🌍 Yer Kürəsinin Su Paylanması Kataloqu",
-        "cat_type": "Su Növü",
-        "cat_share": "Yer Kürəsində Payı (%)",
-        "cat_char": "Əsas Xüsusiyyətləri",
-        "cat_row1_type": "Duzlu Okean və Dəniz Suları",
-        "cat_row1_char": "Yüksək Duzluq (~35 q/L), Sakit, Atlantik, Xəzər dənizi",
-        "cat_row2_type": "Buzlaqlar və Buz Qapaqları",
-        "cat_row2_char": "Antarktida və Qrenlandiyada donmuş şirin su ehtiyatları",
-        "cat_row3_type": "Yeraltı Qat Suları (Aquifer)",
-        "cat_row3_char": "Kənd təsərrüfatı və içməli su üçün istifadə olunan yeraltı ehtiyatlar",
-        "cat_row4_type": "Şirin Səth Suları",
-        "cat_row4_char": "Göllər, çaylar və bataqlıqlar (İnsan istifadəsi üçün əsas mənbə)",
-        "prevent_title": "🛡️ Ətraf Mühitin və Suların Qorunması Tədbirləri",
-        "prevent_1": "• **Bufer Zonalarının Salınması:** Çay kənarlarında bitki örtüyünün əkilməsi gübrə və çöküntü axıntılarını saxlayır.",
-        "prevent_2": "• **Tullantı Nəzarəti:** Sənaye və məişət tullantı sularının təmizlənmədən su mənbələrinə axıdılmasının qarşısını almaq.",
-        "prevent_3": "• **Yeraltı Suların Qorunması:** Kimyəvi pestisidlərin istifadəsini azaltmaqla yeraltı su qatlarını çirklənmədən qorumaq.",
-        "pie_dust": "Toz / Zərrəciklər",
-        "pie_turb": "Bulanıqlıq / Çöküntü",
-        "pie_color": "Rəng Dəyişməsi / Kənar Maddə",
-        "pie_pure": "Təmiz Su Payı",
-        "chart_title": "Tərkib Bölgüsü (%)"
-    }
+    "title": "🌊 AquaVision AI (Offline Rejim)",
+    "subtitle": "Rəqəmsal Su Keyfiyyəti Analizi və Lokal Kimyəvi Bilik Sistemi",
+    "tab_scanner": "🔍 AI Skaner & Dərin Analiz",
+    "tab_purify": "🧪 Fövqəladə Təmizləmə",
+    "tab_catalog": "🌍 Qlobal Su Kataloqu",
+    "tab_prevent": "🛡️ Çirklənmənin Qarşısının Alınması",
+    "input_method": "Daxiletmə Üsulunu Seçin:",
+    "upload_gallery": "📁 Qalereyadan Yüklə",
+    "use_camera": "📷 Kameradan Çək",
+    "upload_label": "Su nümayəsi şəklini yükləyin",
+    "camera_label": "Su nümayəsinin şəklini çəkin",
+    "analyze_btn": "Süni İntellekt Analizini Başlat",
+    "results_header": "📊 Analiz Nəticələri və Xülasə",
+    "purity_score": "Təmizlik Dərəcəsi",
+    "clean_status": "Status: TƏMİZ VƏ İÇMƏYƏ YARARLI SU",
+    "warning_status": "Status: ÇİRKLƏNMİŞ SU AŞKAR EDİLDİ",
+    "chat_title": "🤖 AquaAI Köməkçisi (Lokal)",
+    "chat_placeholder": "Su, kimya və ya filterləmə haqqında soruşun...",
+    "sidebar_nav": "📌 Panel və Alətlər",
+    "quick_norms": "📊 Standart İçməli Su Normaları",
+    "norm_ph": "İdeal pH Səviyyəsi: 6.5 - 8.5",
+    "norm_tds": "Maksimum TDS: < 500 ppm",
+    "norm_turb": "Bulanıqlıq (Turbidity): < 1 NTU",
+    "counter_title": "📈 Skan Statistikası",
+    "purify_title": "🛠️ Fövqəladə Su Təmizləmə Üsulları",
+    "purify_bottle": "**1. Şüşə Qab Filtrinin Hazırlanması:** Plastik qabın dibini kəsin, qapağında dəlik açın və aşağıdan yuxarıya doğru sıx parça, əzilmiş kömür, incə qum, iri qum və daşları təbəqələndirin.",
+    "purify_boil": "**2. Qaynatma Üsulu:** Bakteriya və mikrobları tam öldürmək üçün suyu ən azı 1-3 dəqiqə intensiv qaynadın.",
+    "purify_sodis": "**3. SODIS (Günəşlə Dezinfeksiya):** Şəffaf plastik qabı su ilə doldurub 6–8 saat birbaşa günəş işığı altında saxlayın.",
+    "video_section_title": "📺 Lokal Video Təlimatlar (İnternetsiz Oynatma)",
+    "video_1_title": "🥤 Əlaltı Vasitələrlə Su Filtrinin Hazırlanması",
+    "video_2_title": "☀️ Günəş Enerjisi ilə Su Dezinfeksiyası (SODIS)",
+    "catalog_title": "🌍 Yer Kürəsinin Su Paylanması Kataloqu",
+    "cat_type": "Su Növü",
+    "cat_share": "Yer Kürəsində Payı (%)",
+    "cat_char": "Əsas Xüsusiyyətləri",
+    "cat_row1_type": "Duzlu Okean və Dəniz Suları",
+    "cat_row1_char": "Yüksək Duzluq (~35 q/L), Sakit, Atlantik, Xəzər dənizi",
+    "cat_row2_type": "Buzlaqlar və Buz Qapaqları",
+    "cat_row2_char": "Antarktida və Qrenlandiyada donmuş şirin su ehtiyatları",
+    "cat_row3_type": "Yeraltı Qat Suları (Aquifer)",
+    "cat_row3_char": "Kənd təsərrüfatı və içməli su üçün istifadə olunan yeraltı ehtiyatlar",
+    "cat_row4_type": "Şirin Səth Suları",
+    "cat_row4_char": "Göllər, çaylar və bataqlıqlar (İnsan istifadəsi üçün əsas mənbə)",
+    "prevent_title": "🛡️ Ətraf Mühitin və Suların Qorunması Tədbirləri",
+    "prevent_1": "• **Bufer Zonalarının Salınması:** Çay kənarlarında bitki örtüyünün əkilməsi gübrə və çöküntü axıntılarını saxlayır.",
+    "prevent_2": "• **Tullantı Nəzarəti:** Sənaye və məişət tullantı sularının təmizlənmədən su mənbələrinə axıdılmasının qarşısını almaq.",
+    "prevent_3": "• **Yeraltı Suların Qorunması:** Kimyəvi pestisidlərin istifadəsini azaltmaqla yeraltı su qatlarını çirklənmədən qorumaq.",
+    "pie_dust": "Toz / Zərrəciklər",
+    "pie_turb": "Bulanıqlıq / Çöküntü",
+    "pie_color": "Rəng Dəyişməsi / Kənar Maddə",
+    "pie_pure": "Təmiz Su Payı",
+    "chart_title": "Tərkib Bölgüsü (%)"
 }
 
 if "scan_count" not in st.session_state:
     st.session_state.scan_count = 0
 
-t = TRANSLATIONS["Azerbaijani"]
+t = TRANSLATIONS
 
-# 4. Sol Panel (Sidebar) Tənzimləmələri
+# 4. Sol Panel
 st.sidebar.subheader(t["sidebar_nav"])
 st.sidebar.markdown(f"### {t['quick_norms']}")
 st.sidebar.info(f"• {t['norm_ph']}\n• {t['norm_tds']}\n• {t['norm_turb']}")
-
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"### {t['counter_title']}")
-st.sidebar.metric(label="Umumi Skan Sayı", value=f"{st.session_state.scan_count}")
+st.sidebar.metric(label="Ümumi Skan Sayı", value=f"{st.session_state.scan_count}")
 
-# 5. Ekran Bölgüsü (80% Əsas Sahə, 20% Sağ Panel - Çat və Terminlər)
+# 5. Ekran Bölgüsü
 main_col, ai_col = st.columns([0.8, 0.2], gap="medium")
 
-# --- ƏSAS EKRAN (80%) ---
 with main_col:
     st.title(t["title"])
     st.caption(t["subtitle"])
     
     tabs = st.tabs([t["tab_scanner"], t["tab_purify"], t["tab_catalog"], t["tab_prevent"]])
     
-    # --- TAB 1: AI SKANER & KİMYƏVİ ANALİZ ---
+    # --- TAB 1: LOCAL COMPUTER VISION ANALYZER ---
     with tabs[0]:
         option = st.radio(t["input_method"], (t["upload_gallery"], t["use_camera"]), horizontal=True)
         image_file = None
@@ -150,7 +141,7 @@ with main_col:
             if st.button(t["analyze_btn"], use_container_width=True):
                 st.session_state.scan_count += 1
                 
-                # Kompüter Görməsi (Computer Vision) Hesablamaları
+                # 100% Offline OpenCV processing
                 img_np = np.array(img_pil.convert('RGB'))
                 img_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
                 
@@ -170,7 +161,6 @@ with main_col:
                 turbidity_pct = round(min(50.0, (brightness_std / 128.0) * 100), 2)
                 minerals_pct = round(min(50.0, saturation), 2)
                 
-                # --- HİSSƏ 1: ƏSAS XÜLASƏ VƏ İNSAN İSTİFADƏSİ İMKANI ---
                 st.subheader(t["results_header"])
                 if purity >= 75.0:
                     st.success(t["clean_status"])
@@ -193,7 +183,6 @@ with main_col:
                 
                 st.markdown("---")
                 
-                # Qrafiklər
                 chart_col1, chart_col2 = st.columns(2)
                 with chart_col1:
                     fig_gauge = go.Figure(go.Indicator(
@@ -222,9 +211,7 @@ with main_col:
                 
                 st.markdown("---")
                 
-                # --- HİSSƏ 2: AŞKAR OLUNAN ÇİRK NÖVLƏRİ VƏ ÖZƏL TƏMİZLƏMƏ addımları ---
                 c_dir1, c_dir2 = st.columns(2)
-                
                 with c_dir1:
                     st.markdown("### 🟤 Aşkar Olunan Çirkləndirici Növləri")
                     dirt_list = []
@@ -254,10 +241,7 @@ with main_col:
 
                 st.markdown("---")
                 
-                # --- HİSSƏ 3: GENİŞLƏNDİRİLMİŞ KİMYƏVİ GÖSTƏRİCİLƏR ---
                 st.markdown("### 🧪 Genişləndirilmiş Kimyəvi və Fiziki Analiz")
-                st.caption("Optik spektrofotometriya modelləşdirilməsi ilə təyin olunmuş kimyəvi göstəricilər.")
-                
                 est_ph = round(6.5 + (saturation / 100.0) * 2.0 - (turbidity_pct / 100.0) * 1.0, 2)
                 est_tds = int(120 + (saturation * 5) + (dust_pct * 8))
                 est_turb_ntu = round(0.5 + (turbidity_pct * 0.2), 2)
@@ -267,7 +251,6 @@ with main_col:
                 ch_col2.metric("Ümumi Həll Olunmuş Bərk Maddələr (TDS)", f"{est_tds} ppm", "İdeal: < 500 ppm")
                 ch_col3.metric("Bulanıqlıq (NTU)", f"{est_turb_ntu} NTU", "İdeal: < 1.0 NTU")
                 
-                st.markdown("#### Ətraflı Kimyəvi Göstəricilər Cədvəli")
                 chem_table_data = {
                     "Parametr / İon": ["pH Səviyyəsi", "Ümumi Həll Olunmuş Maddələr (TDS)", "Bulanıqlıq (Turbidity)", "Ağır Metal Riski (Pb/Fe/Cu)", "Nitrat və Nitritlər (NO3-/NO2-)", "Həll Olunmuş Oksigen (DO)"],
                     "Təxmini Qiymət": [f"{est_ph}", f"{est_tds} mq/L", f"{est_turb_ntu} NTU", "Aşağı" if purity > 70 else "Orta/Yüksək", "< 10 mq/L", "6.5 mq/L"],
@@ -276,7 +259,7 @@ with main_col:
                 }
                 st.table(chem_table_data)
 
-    # --- TAB 2: FÖVQƏLADƏ TƏMİZLƏMƏ ---
+    # --- TAB 2: LOCAL MP4 VIDEO PLAYERS ---
     with tabs[1]:
         st.subheader(t["purify_title"])
         st.write(t["purify_bottle"])
@@ -287,15 +270,25 @@ with main_col:
         st.subheader(t["video_section_title"])
         
         v_col1, v_col2 = st.columns(2)
+        
+        # Lokalda saxlanılan video fayllarından oynatma
         with v_col1:
             st.markdown(f"**{t['video_1_title']}**")
-            render_youtube_short("WW8RqmBPlxo")
+            video1_path = os.path.join("assets", "video1.mp4")
+            if os.path.exists(video1_path):
+                st.video(video1_path)
+            else:
+                st.warning("`assets/video1.mp4` faylı tapılmadı. Zəhmət olmasa video faylını qovluğa əlavə edin.")
             
         with v_col2:
             st.markdown(f"**{t['video_2_title']}**")
-            render_youtube_short("X3GA1tfWdN0")
+            video2_path = os.path.join("assets", "video2.mp4")
+            if os.path.exists(video2_path):
+                st.video(video2_path)
+            else:
+                st.warning("`assets/video2.mp4` faylı tapılmadı. Zəhmət olmasa video faylını qovluğa əlavə edin.")
 
-    # --- TAB 3: SU KATALOQU ---
+    # --- TAB 3: WATER CATALOG ---
     with tabs[2]:
         st.subheader(t["catalog_title"])
         catalog_data = {
@@ -305,21 +298,21 @@ with main_col:
         }
         st.table(catalog_data)
 
-    # --- TAB 4: QORUNMA TƏDBİRLƏRİ ---
+    # --- TAB 4: POLLUTION PREVENTION ---
     with tabs[3]:
         st.subheader(t["prevent_title"])
         st.write(t["prevent_1"])
         st.write(t["prevent_2"])
         st.write(t["prevent_3"])
 
-# --- SAĞ PANEL (20%): ÇAT VƏ TERMİNLƏR lÜĞƏTİ ---
+# --- SAĞ PANEL (20%): CHAT & DICTIONARY ---
 with ai_col:
     st.subheader(t["chat_title"])
-    st.caption("AquaVision Engine")
+    st.caption("AquaVision Engine (Lokal Rule Engine)")
     
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Salam! Mən AquaAI köməkçisiyəm. Su analizləri, kimyəvi göstəricilər və ya filterləmə haqqında soruşun!"}
+            {"role": "assistant", "content": "Salam! Mən AquaAI köməkçisiyəm. İnternetsiz lokal rejimdə su göstəriciləri haqqında suallarınızı cavablandıra bilərəm."}
         ]
         
     for message in st.session_state.messages:
@@ -347,7 +340,6 @@ with ai_col:
 
     st.markdown("---")
     
-    # KƏNARDAN BOŞLUQLARI DOLDURAN 8 QISA VƏ ANLAŞIQLI KİMYƏVİ/FİZİKİ TERMİN
     st.markdown("### 📚 Əsas Su Terminləri")
     
     with st.expander("1. pH Dərəcəsi", expanded=False):
