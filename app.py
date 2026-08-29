@@ -1,7 +1,6 @@
 import os
-import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
@@ -12,10 +11,17 @@ from torchvision.models import efficientnet_b2
 from google import genai
 from google.genai import types
 
+# OpenCV Fallback Handling for Headless Environments
+try:
+    import cv2
+    HAS_CV2 = True
+except ImportError:
+    HAS_CV2 = False
+
 # ==========================================
 # 🔑 GEMINI API KEY SETUP
 # ==========================================
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AQ.Ab8RN6LKCN54_WOE0PvSxgtEU7Baz5tcvtXgaPcripgI6Wp4lg")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
 
 # 1. PAGE CONFIGURATION
 st.set_page_config(
@@ -88,7 +94,7 @@ TRANSLATIONS = {
         "chat_placeholder": "Mənə istənilən mövzuda sual verin...",
         "sidebar_nav": "📌 Panel və Alətlər",
         "quick_norms": "📊 Standart İçməli Su Normaları",
-        "norm_ph": "İdeal pH Səviyyəsi: 6.5 - 8.5",
+        "norm_ph": "İideal pH Səviyyəsi: 6.5 - 8.5",
         "norm_tds": "Maksimum TDS: < 500 ppm",
         "norm_turb": "Bulanıqlıq: < 1 NTU",
         "counter_title": "📈 Skan Statistikası",
@@ -276,7 +282,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(f"### {t['counter_title']}")
 st.sidebar.metric(label="Skan Sayı", value=f"{st.session_state.scan_count}")
 
-# 5. MOLECULAR & SPECTRAL ANALYSIS ALGORITHM
+# 5. MOLECULAR & SPECTRAL ANALYSIS ALGORITHM (DUAL MODE: OPENCV OR PIL)
 def analyze_molecular_composition(img_pil):
     img_np = np.array(img_pil)
     
@@ -284,13 +290,19 @@ def analyze_molecular_composition(img_pil):
     g_mean = np.mean(img_np[:, :, 1])
     b_mean = np.mean(img_np[:, :, 2])
     
-    gray_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-    gray = cv2.cvtColor(gray_bgr, cv2.COLOR_BGR2GRAY)
-    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-    
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    edges = cv2.Canny(blur, 40, 120)
-    edge_density = (np.count_nonzero(edges) / edges.size) * 100
+    if HAS_CV2:
+        gray_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+        gray = cv2.cvtColor(gray_bgr, cv2.COLOR_BGR2GRAY)
+        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blur, 40, 120)
+        edge_density = (np.count_nonzero(edges) / edges.size) * 100
+    else:
+        gray_pil = img_pil.convert('L')
+        edges_pil = gray_pil.filter(ImageFilter.FIND_EDGES)
+        edge_np = np.array(edges_pil)
+        edge_density = (np.count_nonzero(edge_np > 50) / edge_np.size) * 100
+        laplacian_var = float(np.var(edge_np))
     
     organic_risk = "Yüksək" if (g_mean > r_mean and g_mean > b_mean) else "Aşağı"
     metal_risk = "Kritik" if (r_mean > b_mean and g_mean > b_mean and laplacian_var > 80) else "Təhlükəsiz"
@@ -470,13 +482,11 @@ with ai_col:
     st.subheader(t["chat_title"])
     st.caption(t["chat_subtitle"])
     
-    # Display message history in UI
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.write(message["content"])
             
     if user_input := st.chat_input(t["chat_placeholder"]):
-        # Append user message to history
         st.session_state.messages.append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.write(user_input)
@@ -487,7 +497,6 @@ with ai_col:
             try:
                 client = genai.Client(api_key=GEMINI_API_KEY)
                 
-                # Format full chat history as native Content objects for Gemini
                 contents_payload = []
                 for msg in st.session_state.messages:
                     api_role = "model" if msg["role"] == "assistant" else "user"
@@ -498,7 +507,6 @@ with ai_col:
                         )
                     )
                 
-                # Execute generation using updated gemini-3.6-flash model
                 response = client.models.generate_content(
                     model="gemini-3.6-flash",
                     contents=contents_payload,
