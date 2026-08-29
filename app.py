@@ -15,7 +15,7 @@ from google.genai import types
 # ==========================================
 # 🔑 GEMINI API KEY SETUP
 # ==========================================
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AQ.Ab8RN6LKCN54_WOE0PvSxgtEU7Baz5tcvtXgaPcripgI6Wp4lg")
 
 # 1. PAGE CONFIGURATION
 st.set_page_config(
