@@ -495,7 +495,7 @@ with main_col:
 
 
 # ==========================================
-# 4. GEMİNİ SÖHBƏT MÜHƏRRİKİ (SÜRƏTLƏNDİRİLMİŞ + RETRY)
+# 4. GEMİNİ SÖHBƏT MÜHƏRRİKİ (STABİL + RETRY)
 # ==========================================
 with ai_col:
     st.subheader(t["chat_title"])
@@ -529,7 +529,7 @@ with ai_col:
         with st.chat_message("assistant"):
             if GEMINI_API_KEY:
                 client = get_genai_client(GEMINI_API_KEY)
-                recent_messages = st.session_state.messages[-8:]
+                recent_messages = st.session_state.messages[-6:]
                 contents_payload = [
                     types.Content(
                         role="model" if msg["role"] == "assistant" else "user",
@@ -541,10 +541,10 @@ with ai_col:
                 ans_text = ""
                 max_retries = 2
 
-                for attempt in range(max_retries + 1):
-                    try:
-                        def stream_generator():
-                            stream = client.models.generate_content_stream(
+                with st.spinner("Cavab hazırlanır..."):
+                    for attempt in range(max_retries + 1):
+                        try:
+                            response = client.models.generate_content(
                                 model="gemini-3.8-flash",
                                 contents=contents_payload,
                                 config=types.GenerateContentConfig(
@@ -553,31 +553,27 @@ with ai_col:
                                     max_output_tokens=512,
                                 )
                             )
-                            for chunk in stream:
-                                if chunk.text:
-                                    yield chunk.text
-
-                        ans_text = st.write_stream(stream_generator())
-                        if ans_text:
+                            if response.text and response.text.strip():
+                                ans_text = response.text.strip()
+                                break
+                            ans_text = "Model boş cavab qaytardı."
                             break
-                    except Exception as exc:
-                        err_str = str(exc)
-                        is_overloaded = "503" in err_str or "UNAVAILABLE" in err_str
-                        if is_overloaded and attempt < max_retries:
-                            time.sleep(1.5 * (attempt + 1))
-                            continue
-                        if is_overloaded:
-                            ans_text = (
-                                "Serverdə müvəqqəti sıxlıq var (503). Zəhmət olmasa, bir neçə saniyə sonra yenidən yoxlayın.\n\n"
-                                + get_offline_fallback(user_input, lang_choice)
-                            )
-                        else:
-                            ans_text = f"Gemini API xətası: {exc}"
-                        st.write(ans_text)
-                        break
+                        except Exception as exc:
+                            err_str = str(exc)
+                            is_overloaded = "503" in err_str or "UNAVAILABLE" in err_str
+                            if is_overloaded and attempt < max_retries:
+                                time.sleep(1.0 * (attempt + 1))
+                                continue
+                            if is_overloaded:
+                                ans_text = (
+                                    "Serverdə müvəqqəti sıxlıq var (503). Bir az sonra yenidən cəhd edin.\n\n"
+                                    + get_offline_fallback(user_input, lang_choice)
+                                )
+                            else:
+                                ans_text = f"Gemini API xətası: {exc}"
+                            break
 
-                if not ans_text:
-                    ans_text = "Boş cavab qaytarıldı."
+                st.write(ans_text)
             else:
                 ans_text = get_offline_fallback(user_input, lang_choice)
                 st.write(ans_text)
