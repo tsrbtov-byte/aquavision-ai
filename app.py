@@ -538,7 +538,7 @@ with ai_col:
                         )
 
                     response = client.models.generate_content(
-                        model="gemini-2.5-flash",
+                        model="gemini-3.8-flash",
                         contents=contents_payload,
                         config=types.GenerateContentConfig(
                             system_instruction=t["sys_instruct"],
@@ -546,9 +546,9 @@ with ai_col:
                             max_output_tokens=1024,
                         )
                     )
-                    ans_text = response.text or get_offline_fallback(user_input, lang_choice)
+                    ans_text = response.text or "Boş cavab qaytarıldı."
                 except Exception as exc:
-                    ans_text = f"Gemini API xətası: {exc}\n\n{get_offline_fallback(user_input, lang_choice)}"
+                    ans_text = f"Gemini API xətası: {exc}"
             else:
                 ans_text = get_offline_fallback(user_input, lang_choice)
 
