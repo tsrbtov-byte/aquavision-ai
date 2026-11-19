@@ -342,6 +342,11 @@ def load_trained_model():
     return None
 
 
+@st.cache_resource
+def get_genai_client(api_key: str):
+    return genai.Client(api_key=api_key)
+
+
 ai_model = load_trained_model()
 
 transform = transforms.Compose([
@@ -489,7 +494,7 @@ with main_col:
 
 
 # ==========================================
-# 4. GEMİNİ SÖHBƏT MÜHƏRRİKİ
+# 4. GEMİNİ SÖHBƏT MÜHƏRRİKİ (SÜRƏTLƏNDİRİLMİŞ)
 # ==========================================
 with ai_col:
     st.subheader(t["chat_title"])
@@ -521,38 +526,42 @@ with ai_col:
             st.write(user_input)
 
         with st.chat_message("assistant"):
-            message_placeholder = st.empty()
-            ans_text = ""
-
             if GEMINI_API_KEY:
                 try:
-                    client = genai.Client(api_key=GEMINI_API_KEY)
-                    contents_payload = []
-                    for msg in st.session_state.messages:
-                        api_role = "model" if msg["role"] == "assistant" else "user"
-                        contents_payload.append(
-                            types.Content(
-                                role=api_role,
-                                parts=[types.Part.from_text(text=msg["content"])]
+                    client = get_genai_client(GEMINI_API_KEY)
+                    recent_messages = st.session_state.messages[-8:]
+                    contents_payload = [
+                        types.Content(
+                            role="model" if msg["role"] == "assistant" else "user",
+                            parts=[types.Part.from_text(text=msg["content"])]
+                        )
+                        for msg in recent_messages
+                    ]
+
+                    def stream_generator():
+                        stream = client.models.generate_content_stream(
+                            model="gemini-3.8-flash",
+                            contents=contents_payload,
+                            config=types.GenerateContentConfig(
+                                system_instruction=t["sys_instruct"] + " Keep answers clear and concise unless asked for details.",
+                                temperature=0.5,
+                                max_output_tokens=512,
                             )
                         )
+                        for chunk in stream:
+                            if chunk.text:
+                                yield chunk.text
 
-                    response = client.models.generate_content(
-                        model="gemini-3.8-flash",
-                        contents=contents_payload,
-                        config=types.GenerateContentConfig(
-                            system_instruction=t["sys_instruct"],
-                            temperature=0.7,
-                            max_output_tokens=1024,
-                        )
-                    )
-                    ans_text = response.text or "Boş cavab qaytarıldı."
+                    ans_text = st.write_stream(stream_generator())
+                    if not ans_text:
+                        ans_text = "Boş cavab qaytarıldı."
                 except Exception as exc:
                     ans_text = f"Gemini API xətası: {exc}"
+                    st.write(ans_text)
             else:
                 ans_text = get_offline_fallback(user_input, lang_choice)
+                st.write(ans_text)
 
-            message_placeholder.write(ans_text)
             st.session_state.messages.append({"role": "assistant", "content": ans_text})
 
     st.markdown("---")
