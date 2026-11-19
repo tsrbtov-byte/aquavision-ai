@@ -1,4 +1,5 @@
 import os
+import cv2
 import numpy as np
 from PIL import Image, ImageFilter
 import streamlit as st
@@ -12,15 +13,9 @@ from google import genai
 from google.genai import types
 
 # ==========================================
-# 1. ENVIRONMENT & BACKEND SETUP
+# 1. MÜHİT VƏ ARXA PLAN QURĞULARI
 # ==========================================
-try:
-    import cv2
-    HAS_CV2 = True
-except ImportError:
-    HAS_CV2 = False
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
+GEMINI_API_KEY = os.getenv("AQ.Ab8RN6KLxY978K-Y6uFL0xdyBMPtDrWh_ZtC4jM9saTbNtP-BA", "").strip()
 
 st.set_page_config(
     page_title="AquaVision AI — Universal Engine",
@@ -29,7 +24,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom Styling
 st.markdown("""
     <style>
     .stApp {
@@ -67,7 +61,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Multi-Language Dictionary
 TRANSLATIONS = {
     "AZ": {
         "title": "🌊 AquaVision AI",
@@ -79,16 +72,16 @@ TRANSLATIONS = {
         "input_method": "Daxiletmə Üsulunu Seçin:",
         "upload_gallery": "📁 Qalereyadan Yüklə",
         "use_camera": "📷 Kameradan Çək",
-        "upload_label": "Su nümayəsi şəklini yükləyin",
-        "camera_label": "Su nümayəsinin şəklini çəkin",
+        "upload_label": "Su nümunəsi şəklini yükləyin",
+        "camera_label": "Su nümunəsinin şəklini çəkin",
         "analyze_btn": "🚀 Maksimum Dəqiqlikli Analizi Başlat",
         "results_header": "📊 Analiz Nəticələri və Spektral Diaqnostika",
         "purity_score": "Təmizlik Dərəcəsi",
         "clean_status": "Status: TƏMİZ VƏ İÇMƏYƏ YARARLI SU",
         "warning_status": "Status: ÇİRKLƏNMİŞ VƏ YA DƏYİŞMİŞ SU AŞKAR EDİLDİ",
-        "chat_title": "🤖 Smart AI Brain",
-        "chat_subtitle": "Yaddaşlı və Çoxşaxəli Təfəkkürə Malik AI (Oflayn/Onlayn)",
-        "chat_welcome": "Salam! Mən sizin şəxsi intellektual assistentinizəm. Həm onlayn, həm də oflayn rejimdə su analizi, fizika, kimya və mühəndislik mövzularında kömək edə bilərəm.",
+        "chat_title": "🤖 Gemini AI Assistent",
+        "chat_subtitle": "Onlayn Gemini Zəkası və Oflayn Ehtiyat Məntiq",
+        "chat_welcome": "Salam! Mən AquaVision AI daxilində işləyən Gemini assistentiyəm. Su analizi, mühəndislik, fizika və digər mövzularda kömək edə bilərəm.",
         "chat_placeholder": "Mənə istənilən mövzuda sual verin...",
         "sidebar_nav": "📌 Panel və Alətlər",
         "quick_norms": "📊 Standart İçməli Su Normaları",
@@ -96,10 +89,12 @@ TRANSLATIONS = {
         "norm_tds": "Maksimum TDS: < 500 ppm",
         "norm_turb": "Bulanıqlıq: < 1 NTU",
         "counter_title": "📈 Skan Statistikası",
+        "scan_label": "Skan Sayı",
+        "sample_caption": "Nümunə Şəkli",
         "purify_title": "🛠️ Fövqəladə Su Təmizləmə Üsulları",
-        "purify_bottle": "**1. Şüşə Qab Filtrinin Hazırlanması:** Plastik qabın dibini kəsin, qapağında dəlik açın və aşağıdan yuxarıya doğru sıx parça, əzilledilmiş kömür, incə qum, iri qum və daşları təbəqələndirin.",
+        "purify_bottle": "**1. Şüşə Qab Filtrinin Hazırlanması:** Plastik qabın dibini kəsin, qapağında dəlik açın və aşağıdan yuxarıya doğru sıx parça, əzilmiş kömür, incə qum, iri qum və daşları təbəqələndirin.",
         "purify_boil": "**2. Qaynatma Üsulu:** Bakteriya və mikrobları tam öldürmək üçün suyu ən azı 1-3 dəqiqə intensiv qaynadın.",
-        "purify_sodis": "**3. SODIS (Günəşlə Dezinfeksiya):** Şəffaf plastik qabı su ilə doldurub 6–8 saat birbaşa günəş işığı altında saxlayın.",
+        "purify_sodis": "**3. SODIS (Günəşlə Dezinfeksiya):** Şəffaf plastik qabı su ilə doldurub 6-8 saat birbaşa günəş işığı altında saxlayın.",
         "guide_section_title": "📖 Vizual Təlimat Kartları",
         "guide_1_title": "🥤 Əlaltı Vasitələrlə Su Filtrinin Hazırlanması",
         "guide_2_title": "☀️ Günəş Enerjisi ilə Su Dezinfeksiyası (SODIS)",
@@ -124,12 +119,11 @@ TRANSLATIONS = {
         "pie_color": "Spektral Rəng Dəyişməsi",
         "pie_pure": "Saf Su Oranı",
         "chart_title": "Optik Tərkib Bölgüsü (%)",
+        "missing_key_msg": "GEMINI_API_KEY təyin edilməyib. Oflayn ehtiyat cavab işlədilir: '{query}' sorğusu yerli rejimdə qəbul edildi.",
         "sys_instruct": (
-            "You are an advanced, empathetic, and broad-thinking AI companion integrated into the AquaVision AI platform. "
-            "Conversational Tone: Speak naturally, warmly, and with high intellectual depth, like an expert human partner. Avoid sounding robotic, repetitive, or overly formal. "
-            "Complete Memory & Continuity: Continuously refer back to prior statements, user details, and discussed context throughout the conversation. "
-            "Multi-Disciplinary Perspective: Integrate insights from computer science, engineering, physics, philosophy, and environmental science naturally when answering. "
-            "Respond strictly in fluent Azerbaijani language."
+            "You are a helpful, clear, and analytical AI assistant inside AquaVision AI. "
+            "Answer thoroughly across engineering, physics, water quality, and general problem-solving. "
+            "Respond strictly in fluent Azerbaijani."
         )
     },
     "EN": {
@@ -149,16 +143,18 @@ TRANSLATIONS = {
         "purity_score": "Purity Score",
         "clean_status": "Status: CLEAN & POTABLE WATER",
         "warning_status": "Status: POLLUTED OR ALTERED WATER DETECTED",
-        "chat_title": "🤖 Smart AI Brain",
-        "chat_subtitle": "Human-Like Personalized Memory & Broad Intelligence (Offline/Online)",
-        "chat_welcome": "Hello! I am your personalized AI partner. Operating in both online and offline modes, I can assist you with water quality, physics, chemistry, and engineering.",
-        "chat_placeholder": "Ask me anything in detail...",
+        "chat_title": "🤖 Gemini AI Assistant",
+        "chat_subtitle": "Online Gemini Intelligence & Offline Fallback Logic",
+        "chat_welcome": "Hello! I am the Gemini assistant inside AquaVision AI. I can help with water analysis, engineering, physics, and problem solving.",
+        "chat_placeholder": "Ask me anything...",
         "sidebar_nav": "📌 Panel & Tools",
         "quick_norms": "📊 Drinking Water Standards",
         "norm_ph": "Ideal pH Range: 6.5 - 8.5",
         "norm_tds": "Maximum TDS: < 500 ppm",
         "norm_turb": "Turbidity: < 1 NTU",
         "counter_title": "📈 Scan Statistics",
+        "scan_label": "Scan Count",
+        "sample_caption": "Sample Image",
         "purify_title": "🛠️ Emergency Water Purification Methods",
         "purify_bottle": "**1. DIY Bottle Filter Construction:** Cut the bottom of a plastic bottle, pierce the cap, and layer dense cloth, crushed charcoal, fine sand, coarse sand, and stones from bottom to top.",
         "purify_boil": "**2. Boiling Method:** Boil water vigorously for 1-3 minutes to completely kill bacteria and pathogens.",
@@ -187,11 +183,10 @@ TRANSLATIONS = {
         "pie_color": "Spectral Color Shift",
         "pie_pure": "Pure Water Ratio",
         "chart_title": "Optical Composition Breakdown (%)",
+        "missing_key_msg": "GEMINI_API_KEY is not set. Using offline fallback for: '{query}'.",
         "sys_instruct": (
-            "You are an advanced, empathetic, and broad-thinking AI companion integrated into the AquaVision AI platform. "
-            "Conversational Tone: Speak naturally, warmly, and with high intellectual depth, like an expert human partner. Avoid sounding robotic, repetitive, or overly formal. "
-            "Complete Memory & Continuity: Continuously refer back to prior statements, user details, and discussed context throughout the conversation. "
-            "Multi-Disciplinary Perspective: Integrate insights from computer science, engineering, physics, philosophy, and environmental science naturally when answering. "
+            "You are a helpful, clear, and analytical AI assistant inside AquaVision AI. "
+            "Answer thoroughly across engineering, physics, water quality, and general problem-solving. "
             "Respond strictly in fluent English."
         )
     },
@@ -212,16 +207,18 @@ TRANSLATIONS = {
         "purity_score": "Уровень Чистоты",
         "clean_status": "Статус: ЧИСТАЯ И ПИТЬЕВАЯ ВОДА",
         "warning_status": "Статус: ОБНАРУЖЕНО Загрязнение ИЛИ ИЗМЕНЕНИЕ СОСТАВА",
-        "chat_title": "🤖 Разумный ИИ Мозг",
-        "chat_subtitle": "Персонализированная Память и Широкое Мышление (Офлайн/Онлайн)",
-        "chat_welcome": "Здравствуйте! Я ваш персональный ИИ-партнер. Работаю как в онлайн, так и в офлайн режиме. Готов ответить на вопросы о качестве воды, физике и химии.",
-        "chat_placeholder": "Задайте развернутый вопрос...",
+        "chat_title": "🤖 Gemini AI Ассистент",
+        "chat_subtitle": "Онлайн Gemini и Офлайн Резервная Логика",
+        "chat_welcome": "Здравствуйте! Я ассистент Gemini внутри AquaVision AI. Помогу с анализом воды, физикой, инженерией и решением задач.",
+        "chat_placeholder": "Задайте вопрос...",
         "sidebar_nav": "📌 Панель и Инструменты",
         "quick_norms": "📊 Стандарты Питьевой Воды",
         "norm_ph": "Идеальный pH: 6.5 - 8.5",
         "norm_tds": "Макс. TDS: < 500 ppm",
         "norm_turb": "Мутность: < 1 NTU",
         "counter_title": "📈 Статистика Сканирований",
+        "scan_label": "Число Сканирований",
+        "sample_caption": "Изображение Образца",
         "purify_title": "🛠️ Экстренные Методы Очистки Воды",
         "purify_bottle": "**1. Изготовление Фильтра из Бутылки:** Отрежьте дно пластиковой бутылки, сделайте отверстие в крышке и уложите слоями снизу вверх: плотную ткань, измельченный уголь, мелкий песок, крупный песок и камушки.",
         "purify_boil": "**2. Кипячение:** Интенсивно кипятите воду не менее 1-3 минут для уничтожения бактерий.",
@@ -250,17 +247,15 @@ TRANSLATIONS = {
         "pie_color": "Спектральное Смещение",
         "pie_pure": "Доля Чистой Воды",
         "chart_title": "Оптический Состав (%)",
+        "missing_key_msg": "GEMINI_API_KEY не задан. Используется офлайн-резерв для запроса: '{query}'.",
         "sys_instruct": (
-            "You are an advanced, empathetic, and broad-thinking AI companion integrated into the AquaVision AI platform. "
-            "Conversational Tone: Speak naturally, warmly, and with high intellectual depth, like an expert human partner. Avoid sounding robotic, repetitive, or overly formal. "
-            "Complete Memory & Continuity: Continuously refer back to prior statements, user details, and discussed context throughout the conversation. "
-            "Multi-Disciplinary Perspective: Integrate insights from computer science, engineering, physics, philosophy, and environmental science naturally when answering. "
-            "Respond strictly in fluent Russian language."
+            "You are a helpful, clear, and analytical AI assistant inside AquaVision AI. "
+            "Answer thoroughly across engineering, physics, water quality, and general problem-solving. "
+            "Respond strictly in fluent Russian."
         )
     }
 }
 
-# Sidebar settings
 st.sidebar.title("AquaVision AI")
 lang_choice = st.sidebar.selectbox("🌐 Dil / Language / Язык", ["AZ", "EN", "RU"])
 t = TRANSLATIONS[lang_choice]
@@ -278,38 +273,31 @@ st.sidebar.markdown(f"### {t['quick_norms']}")
 st.sidebar.info(f"• {t['norm_ph']}\n• {t['norm_tds']}\n• {t['norm_turb']}")
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"### {t['counter_title']}")
-st.sidebar.metric(label="Skan Sayı", value=f"{st.session_state.scan_count}")
+st.sidebar.metric(label=t["scan_label"], value=f"{st.session_state.scan_count}")
 
 
 # ==========================================
-# 2. ANALYSIS LOGIC & MODELS
+# 2. ANALİZ MƏNTİQİ VƏ MODELLƏR
 # ==========================================
 def analyze_molecular_composition(img_pil):
     img_np = np.array(img_pil)
     r_mean = np.mean(img_np[:, :, 0])
     g_mean = np.mean(img_np[:, :, 1])
     b_mean = np.mean(img_np[:, :, 2])
-    
-    if HAS_CV2:
-        gray_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-        gray = cv2.cvtColor(gray_bgr, cv2.COLOR_BGR2GRAY)
-        laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-        blur = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blur, 40, 120)
-        edge_density = (np.count_nonzero(edges) / edges.size) * 100
-    else:
-        gray_pil = img_pil.convert('L')
-        edges_pil = gray_pil.filter(ImageFilter.FIND_EDGES)
-        edge_np = np.array(edges_pil)
-        edge_density = (np.count_nonzero(edge_np > 50) / edge_np.size) * 100
-        laplacian_var = float(np.var(edge_np))
-    
+
+    gray_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+    gray = cv2.cvtColor(gray_bgr, cv2.COLOR_BGR2GRAY)
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blur, 40, 120)
+    edge_density = (np.count_nonzero(edges) / edges.size) * 100
+
     organic_risk = "Yüksək" if (g_mean > r_mean and g_mean > b_mean) else "Aşağı"
     metal_risk = "Kritik" if (r_mean > b_mean and g_mean > b_mean and laplacian_var > 80) else "Təhlükəsiz"
-    
+
     color_shift = (abs(r_mean - b_mean) + abs(g_mean - b_mean)) / 2.0
     spectral_score = max(5.0, min(99.0, 100.0 - (color_shift * 0.8 + edge_density * 2.5 + (laplacian_var / 15.0))))
-    
+
     return {
         "score": round(spectral_score, 1),
         "organic_risk": organic_risk,
@@ -318,20 +306,22 @@ def analyze_molecular_composition(img_pil):
         "laplacian_var": round(laplacian_var, 2)
     }
 
+
 @st.cache_resource
 def load_trained_model():
     model = efficientnet_b2(weights=None)
     num_ftrs = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(num_ftrs, 2)
-    
+
     if os.path.exists("water_model.pth"):
         try:
-            model.load_state_dict(torch.load("water_model.pth", map_location=torch.device('cpu')))
+            model.load_state_dict(torch.load("water_model.pth", map_location=torch.device("cpu")))
             model.eval()
             return model
         except Exception:
             return None
     return None
+
 
 ai_model = load_trained_model()
 
@@ -343,16 +333,16 @@ transform = transforms.Compose([
 
 
 # ==========================================
-# 3. INTERFACE & EXECUTION
+# 3. İNTERFEYS VƏ İCRA
 # ==========================================
 main_col, ai_col = st.columns([0.68, 0.32], gap="medium")
 
 with main_col:
     st.title(t["title"])
     st.caption(t["subtitle"])
-    
+
     tabs = st.tabs([t["tab_scanner"], t["tab_purify"], t["tab_catalog"], t["tab_prevent"]])
-    
+
     with tabs[0]:
         option = st.radio(t["input_method"], (t["upload_gallery"], t["use_camera"]), horizontal=True)
         image_file = None
@@ -360,16 +350,16 @@ with main_col:
             image_file = st.file_uploader(t["upload_label"], type=["jpg", "png", "jpeg"])
         else:
             image_file = st.camera_input(t["camera_label"])
-            
+
         if image_file is not None:
-            img_pil = Image.open(image_file).convert('RGB')
-            st.image(img_pil, caption="Nümayə Şəkli", use_container_width=True)
-            
+            img_pil = Image.open(image_file).convert("RGB")
+            st.image(img_pil, caption=t["sample_caption"], use_container_width=True)
+
             if st.button(t["analyze_btn"], use_container_width=True):
                 st.session_state.scan_count += 1
                 mol_data = analyze_molecular_composition(img_pil)
                 cv_score = mol_data["score"]
-                
+
                 if ai_model is not None:
                     input_tensor = transform(img_pil).unsqueeze(0)
                     with torch.no_grad():
@@ -379,53 +369,60 @@ with main_col:
                     purity = round((dl_purity * 0.70) + (cv_score * 0.30), 1)
                 else:
                     purity = cv_score
-                
+
                 dust_pct = round(min(40.0, (100 - purity) * 0.4), 2)
                 turbidity_pct = round(min(40.0, (100 - purity) * 0.35), 2)
                 minerals_pct = round(min(30.0, (100 - purity) * 0.25), 2)
-                
+
                 st.subheader(t["results_header"])
                 if purity >= 70.0:
                     st.success(t["clean_status"])
                 else:
                     st.error(t["warning_status"])
-                
+
                 chart_col1, chart_col2 = st.columns(2)
                 with chart_col1:
                     fig_gauge = go.Figure(go.Indicator(
                         mode="gauge+number",
                         value=purity,
-                        title={'text': t["purity_score"]},
+                        title={"text": t["purity_score"]},
                         gauge={
-                            'axis': {'range': [0, 100]},
-                            'bar': {'color': "#00aaff"},
-                            'steps': [
-                                {'range': [0, 50], 'color': "#e74c3c"},
-                                {'range': [50, 75], 'color': "#f1c40f"},
-                                {'range': [75, 100], 'color': "#2ecc71"}
+                            "axis": {"range": [0, 100]},
+                            "bar": {"color": "#00aaff"},
+                            "steps": [
+                                {"range": [0, 50], "color": "#e74c3c"},
+                                {"range": [50, 75], "color": "#f1c40f"},
+                                {"range": [75, 100], "color": "#2ecc71"}
                             ]
                         }
                     ))
                     fig_gauge.update_layout(height=260, margin=dict(l=15, r=15, t=30, b=15), paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"))
                     st.plotly_chart(fig_gauge, use_container_width=True)
-                    
+
                 with chart_col2:
                     labels = [t["pie_dust"], t["pie_turb"], t["pie_color"], t["pie_pure"]]
-                    values = [dust_pct, turbidity_pct, minerals_pct, max(0, purity)]
-                    fig_pie = px.pie(names=labels, values=values, title=t["chart_title"], color_discrete_sequence=['#e74c3c', '#e67e22', '#f1c40f', '#3498db'])
+                    values = [dust_pct, turbidity_pct, minerals_pct, max(0.0, purity)]
+                    fig_pie = px.pie(names=labels, values=values, title=t["chart_title"], color_discrete_sequence=["#e74c3c", "#e67e22", "#f1c40f", "#3498db"])
                     fig_pie.update_layout(height=260, margin=dict(l=15, r=15, t=30, b=15), paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"))
                     st.plotly_chart(fig_pie, use_container_width=True)
-                
+
                 st.markdown("---")
                 est_ph = round(6.5 + (minerals_pct / 100.0) * 1.5 - (turbidity_pct / 100.0) * 0.8, 2)
                 est_tds = int(120 + (minerals_pct * 8) + (dust_pct * 10))
                 est_turb_ntu = round(0.4 + (turbidity_pct * 0.15), 2)
-                
+
                 chem_table_data = {
                     "Parametr": ["pH Səviyyəsi", "TDS (Minerallaşma)", "Bulanıqlıq (Turbidity)", "Organik Maddə Riski", "Ağır Metal Riski", "Optik Qırılma İndeksi"],
                     "Qiymət": [f"{est_ph}", f"{est_tds} mq/L", f"{est_turb_ntu} NTU", mol_data["organic_risk"], mol_data["metal_risk"], f"{mol_data['laplacian_var']}"],
                     "Norma Limit": ["6.5 – 8.5", "< 500 mq/L", "< 1.0 NTU", "Aşağı", "Təhlükəsiz", "< 50.0"],
-                    "Status": ["Normal" if 6.5 <= est_ph <= 8.5 else "Kənarlaşma", "İdeal" if est_tds < 500 else "Yüksək", "Təmiz" if est_turb_ntu < 1.0 else "Bulanıq", "Təhlükəsiz" if mol_data["organic_risk"] == "Aşağı" else "Yüksək Risk", "Təhlükəsiz" if mol_data["metal_risk"] == "Təhlükəsiz" else "Təmizlənməlidir", "Stabil"]
+                    "Status": [
+                        "Normal" if 6.5 <= est_ph <= 8.5 else "Kənarlaşma",
+                        "İdeal" if est_tds < 500 else "Yüksək",
+                        "Təmiz" if est_turb_ntu < 1.0 else "Bulanıq",
+                        "Təhlükəsiz" if mol_data["organic_risk"] == "Aşağı" else "Yüksək Risk",
+                        "Təhlükəsiz" if mol_data["metal_risk"] == "Təhlükəsiz" else "Təmizlənməlidir",
+                        "Stabil"
+                    ]
                 }
                 st.table(chem_table_data)
 
@@ -434,7 +431,7 @@ with main_col:
         st.write(t["purify_bottle"])
         st.write(t["purify_boil"])
         st.write(t["purify_sodis"])
-        
+
         st.markdown("---")
         st.subheader(t["guide_section_title"])
         v_col1, v_col2 = st.columns(2)
@@ -471,78 +468,71 @@ with main_col:
         st.write(t["prevent_2"])
         st.write(t["prevent_3"])
 
+
 # ==========================================
-# 4. HYBRID AI CHAT ENGINE (ONLINE/OFFLINE)
+# 4. GEMİNİ SÖHBƏT MÜHƏRRİKİ
 # ==========================================
 with ai_col:
     st.subheader(t["chat_title"])
     st.caption(t["chat_subtitle"])
-    
+
     def get_offline_fallback(user_text, lang):
         text_lower = user_text.lower()
         if lang == "AZ":
-            if any(k in text_lower for k in ["salam", "merhaba", "hi", "hello"]):
-                return "Salam! Mən AquaVision AI sisteminin oflayn rejimdə işləyən köməkçisiyəm. İnternet yoxdur, lakin ümumi suallarınızı cavablandıra bilərəm."
-            elif "ph" in text_lower:
+            if "ph" in text_lower:
                 return "İdeal içməli suyun pH səviyyəsi 6.5 və 8.5 aralığında olmalıdır."
-            elif any(k in text_lower for k in ["tds", "minerallashma", "duz"]):
-                return "TDS (Total Dissolved Solids) suda həll olmuş maddələrin miqdarıdır. İçməli su üçün norma 500 mq/L-dən aşağıdır."
-            else:
-                return f"Oflayn Rejim: '{user_text}' sorğunuz yerli baza vasitəsilə işləndi."
-        elif lang == "EN":
-            if any(k in text_lower for k in ["hi", "hello", "hey"]):
-                return "Hello! I am operating in offline mode. I can still assist with general parameters and logic."
-            elif "ph" in text_lower:
+            if "tds" in text_lower or "minerallaşma" in text_lower:
+                return "TDS suda həll olmuş maddələrin miqdarıdır. İçməli su üçün norma 500 mq/L-dən aşağıdır."
+            return t["missing_key_msg"].format(query=user_text)
+        if lang == "EN":
+            if "ph" in text_lower:
                 return "Normal drinking water pH is between 6.5 and 8.5."
-            else:
-                return f"Offline Mode: Processed '{user_text}' locally."
-        else:
-            if any(k in text_lower for k in ["привет", "здравствуйте"]):
-                return "Здравствуйте! Я работаю в автономном режиме и готов помочь."
-            else:
-                return f"Автономный режим: Обработано локально для запроса '{user_text}'."
+            return t["missing_key_msg"].format(query=user_text)
+        if "ph" in text_lower:
+            return "Нормальный pH питьевой воды составляет от 6.5 до 8.5."
+        return t["missing_key_msg"].format(query=user_text)
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.write(message["content"])
-            
+
     if user_input := st.chat_input(t["chat_placeholder"]):
         st.session_state.messages.append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.write(user_input)
-            
+
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
             ans_text = ""
-            
-            # Attempt Cloud Connection
-            try:
-                client = genai.Client(api_key=GEMINI_API_KEY)
-                contents_payload = []
-                for msg in st.session_state.messages:
-                    api_role = "model" if msg["role"] == "assistant" else "user"
-                    contents_payload.append(
-                        types.Content(
-                            role=api_role,
-                            parts=[types.Part.from_text(text=msg["content"])]
+
+            if GEMINI_API_KEY:
+                try:
+                    client = genai.Client(api_key=GEMINI_API_KEY)
+                    contents_payload = []
+                    for msg in st.session_state.messages:
+                        api_role = "model" if msg["role"] == "assistant" else "user"
+                        contents_payload.append(
+                            types.Content(
+                                role=api_role,
+                                parts=[types.Part.from_text(text=msg["content"])]
+                            )
+                        )
+
+                    response = client.models.generate_content(
+                        model="gemini-2.5-flash",
+                        contents=contents_payload,
+                        config=types.GenerateContentConfig(
+                            system_instruction=t["sys_instruct"],
+                            temperature=0.7,
+                            max_output_tokens=1024,
                         )
                     )
-                
-                response = client.models.generate_content(
-                    model="gemini-3.6-flash",
-                    contents=contents_payload,
-                    config=types.GenerateContentConfig(
-                        system_instruction=t["sys_instruct"],
-                        temperature=0.75,
-                        top_p=0.95,
-                        max_output_tokens=1024,
-                    )
-                )
-                ans_text = response.text
-            except Exception:
-                # Fallback to local logic if server cannot be reached
+                    ans_text = response.text or get_offline_fallback(user_input, lang_choice)
+                except Exception:
+                    ans_text = get_offline_fallback(user_input, lang_choice)
+            else:
                 ans_text = get_offline_fallback(user_input, lang_choice)
-                
+
             message_placeholder.write(ans_text)
             st.session_state.messages.append({"role": "assistant", "content": ans_text})
 
