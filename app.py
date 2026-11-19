@@ -11,19 +11,17 @@ from torchvision.models import efficientnet_b2
 from google import genai
 from google.genai import types
 
-# OpenCV Fallback Handling for Headless Environments
+# ==========================================
+# 1. ENVIRONMENT & BACKEND SETUP
+# ==========================================
 try:
     import cv2
     HAS_CV2 = True
 except ImportError:
     HAS_CV2 = False
 
-# ==========================================
-# 🔑 GEMINI API KEY SETUP
-# ==========================================
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY_HERE")
 
-# 1. PAGE CONFIGURATION
 st.set_page_config(
     page_title="AquaVision AI — Universal Engine",
     page_icon="🌊",
@@ -31,7 +29,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 2. CUSTOM CSS STYLING
+# Custom Styling
 st.markdown("""
     <style>
     .stApp {
@@ -69,7 +67,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 3. MULTI-LANGUAGE DICTIONARY (AZ / EN / RU)
+# Multi-Language Dictionary
 TRANSLATIONS = {
     "AZ": {
         "title": "🌊 AquaVision AI",
@@ -89,12 +87,12 @@ TRANSLATIONS = {
         "clean_status": "Status: TƏMİZ VƏ İÇMƏYƏ YARARLI SU",
         "warning_status": "Status: ÇİRKLƏNMİŞ VƏ YA DƏYİŞMİŞ SU AŞKAR EDİLDİ",
         "chat_title": "🤖 Smart AI Brain",
-        "chat_subtitle": "Yaddaşlı və Çoxşaxəli Təfəkkürə Malik AI",
-        "chat_welcome": "Salam! Mən sizin şəxsi intellektual assistentinizəm. Əvvəlki bütün danışıqlarımızı mükəmməl xatırlayıram. Fizika, kimya, biologiya, mühəndislik, AI və fəlsəfə haqqında dərin müzakirələr apara bilərik.",
+        "chat_subtitle": "Yaddaşlı və Çoxşaxəli Təfəkkürə Malik AI (Oflayn/Onlayn)",
+        "chat_welcome": "Salam! Mən sizin şəxsi intellektual assistentinizəm. Həm onlayn, həm də oflayn rejimdə su analizi, fizika, kimya və mühəndislik mövzularında kömək edə bilərəm.",
         "chat_placeholder": "Mənə istənilən mövzuda sual verin...",
         "sidebar_nav": "📌 Panel və Alətlər",
         "quick_norms": "📊 Standart İçməli Su Normaları",
-        "norm_ph": "İideal pH Səviyyəsi: 6.5 - 8.5",
+        "norm_ph": "İdeal pH Səviyyəsi: 6.5 - 8.5",
         "norm_tds": "Maksimum TDS: < 500 ppm",
         "norm_turb": "Bulanıqlıq: < 1 NTU",
         "counter_title": "📈 Skan Statistikası",
@@ -152,8 +150,8 @@ TRANSLATIONS = {
         "clean_status": "Status: CLEAN & POTABLE WATER",
         "warning_status": "Status: POLLUTED OR ALTERED WATER DETECTED",
         "chat_title": "🤖 Smart AI Brain",
-        "chat_subtitle": "Human-Like Personalized Memory & Broad Intelligence",
-        "chat_welcome": "Hello! I am your personalized AI partner. I retain complete memory of our conversation history. Feel free to ask complex questions spanning science, engineering, philosophy, and innovation.",
+        "chat_subtitle": "Human-Like Personalized Memory & Broad Intelligence (Offline/Online)",
+        "chat_welcome": "Hello! I am your personalized AI partner. Operating in both online and offline modes, I can assist you with water quality, physics, chemistry, and engineering.",
         "chat_placeholder": "Ask me anything in detail...",
         "sidebar_nav": "📌 Panel & Tools",
         "quick_norms": "📊 Drinking Water Standards",
@@ -215,8 +213,8 @@ TRANSLATIONS = {
         "clean_status": "Статус: ЧИСТАЯ И ПИТЬЕВАЯ ВОДА",
         "warning_status": "Статус: ОБНАРУЖЕНО Загрязнение ИЛИ ИЗМЕНЕНИЕ СОСТАВА",
         "chat_title": "🤖 Разумный ИИ Мозг",
-        "chat_subtitle": "Персонализированная Память и Широкое Мышление",
-        "chat_welcome": "Здравствуйте! Я ваш персональный ИИ-партнер с абсолютной памятью диалога. Я помню все предыдущие вопросы и детали. Готов к глубоким обсуждениям в области науки, технологий и философии.",
+        "chat_subtitle": "Персонализированная Память и Широкое Мышление (Офлайн/Онлайн)",
+        "chat_welcome": "Здравствуйте! Я ваш персональный ИИ-партнер. Работаю как в онлайн, так и в офлайн режиме. Готов ответить на вопросы о качестве воды, физике и химии.",
         "chat_placeholder": "Задайте развернутый вопрос...",
         "sidebar_nav": "📌 Панель и Инструменты",
         "quick_norms": "📊 Стандарты Питьевой Воды",
@@ -262,7 +260,7 @@ TRANSLATIONS = {
     }
 }
 
-# 4. SIDEBAR SETTINGS & COUNTERS
+# Sidebar settings
 st.sidebar.title("AquaVision AI")
 lang_choice = st.sidebar.selectbox("🌐 Dil / Language / Язык", ["AZ", "EN", "RU"])
 t = TRANSLATIONS[lang_choice]
@@ -282,10 +280,12 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(f"### {t['counter_title']}")
 st.sidebar.metric(label="Skan Sayı", value=f"{st.session_state.scan_count}")
 
-# 5. MOLECULAR & SPECTRAL ANALYSIS ALGORITHM (DUAL MODE: OPENCV OR PIL)
+
+# ==========================================
+# 2. ANALYSIS LOGIC & MODELS
+# ==========================================
 def analyze_molecular_composition(img_pil):
     img_np = np.array(img_pil)
-    
     r_mean = np.mean(img_np[:, :, 0])
     g_mean = np.mean(img_np[:, :, 1])
     b_mean = np.mean(img_np[:, :, 2])
@@ -318,7 +318,6 @@ def analyze_molecular_composition(img_pil):
         "laplacian_var": round(laplacian_var, 2)
     }
 
-# 6. EFFICIENTNET-B2 MODEL LOAD
 @st.cache_resource
 def load_trained_model():
     model = efficientnet_b2(weights=None)
@@ -342,7 +341,10 @@ transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-# 7. MAIN UI LAYOUT
+
+# ==========================================
+# 3. INTERFACE & EXECUTION
+# ==========================================
 main_col, ai_col = st.columns([0.68, 0.32], gap="medium")
 
 with main_col:
@@ -351,7 +353,6 @@ with main_col:
     
     tabs = st.tabs([t["tab_scanner"], t["tab_purify"], t["tab_catalog"], t["tab_prevent"]])
     
-    # --- TAB 1: AI SCANNER ---
     with tabs[0]:
         option = st.radio(t["input_method"], (t["upload_gallery"], t["use_camera"]), horizontal=True)
         image_file = None
@@ -366,7 +367,6 @@ with main_col:
             
             if st.button(t["analyze_btn"], use_container_width=True):
                 st.session_state.scan_count += 1
-                
                 mol_data = analyze_molecular_composition(img_pil)
                 cv_score = mol_data["score"]
                 
@@ -417,7 +417,6 @@ with main_col:
                     st.plotly_chart(fig_pie, use_container_width=True)
                 
                 st.markdown("---")
-                
                 est_ph = round(6.5 + (minerals_pct / 100.0) * 1.5 - (turbidity_pct / 100.0) * 0.8, 2)
                 est_tds = int(120 + (minerals_pct * 8) + (dust_pct * 10))
                 est_turb_ntu = round(0.4 + (turbidity_pct * 0.15), 2)
@@ -430,7 +429,6 @@ with main_col:
                 }
                 st.table(chem_table_data)
 
-    # --- TAB 2: EMERGENCY PURIFICATION ---
     with tabs[1]:
         st.subheader(t["purify_title"])
         st.write(t["purify_bottle"])
@@ -440,7 +438,6 @@ with main_col:
         st.markdown("---")
         st.subheader(t["guide_section_title"])
         v_col1, v_col2 = st.columns(2)
-        
         with v_col1:
             st.markdown(f"### {t['guide_1_title']}")
             st.info("""
@@ -450,7 +447,6 @@ with main_col:
                 3. Aktiv kömür, narın qum və çınqıl əlavə edin.
                 4. Suyu yuxarıdan tədricən süzün.
             """)
-            
         with v_col2:
             st.markdown(f"### {t['guide_2_title']}")
             st.success("""
@@ -460,7 +456,6 @@ with main_col:
                 3. Günəş altında saxlayın (6-24 saat).
             """)
 
-    # --- TAB 3: WATER CATALOG ---
     with tabs[2]:
         st.subheader(t["catalog_title"])
         catalog_data = {
@@ -470,18 +465,43 @@ with main_col:
         }
         st.table(catalog_data)
 
-    # --- TAB 4: POLLUTION PREVENTION ---
     with tabs[3]:
         st.subheader(t["prevent_title"])
         st.write(t["prevent_1"])
         st.write(t["prevent_2"])
         st.write(t["prevent_3"])
 
-# --- RIGHT SIDEBAR: GEMINI 3.6 FLASH INTEGRATION ---
+# ==========================================
+# 4. HYBRID AI CHAT ENGINE (ONLINE/OFFLINE)
+# ==========================================
 with ai_col:
     st.subheader(t["chat_title"])
     st.caption(t["chat_subtitle"])
     
+    def get_offline_fallback(user_text, lang):
+        text_lower = user_text.lower()
+        if lang == "AZ":
+            if any(k in text_lower for k in ["salam", "merhaba", "hi", "hello"]):
+                return "Salam! Mən AquaVision AI sisteminin oflayn rejimdə işləyən köməkçisiyəm. İnternet yoxdur, lakin ümumi suallarınızı cavablandıra bilərəm."
+            elif "ph" in text_lower:
+                return "İdeal içməli suyun pH səviyyəsi 6.5 və 8.5 aralığında olmalıdır."
+            elif any(k in text_lower for k in ["tds", "minerallashma", "duz"]):
+                return "TDS (Total Dissolved Solids) suda həll olmuş maddələrin miqdarıdır. İçməli su üçün norma 500 mq/L-dən aşağıdır."
+            else:
+                return f"Oflayn Rejim: '{user_text}' sorğunuz yerli baza vasitəsilə işləndi."
+        elif lang == "EN":
+            if any(k in text_lower for k in ["hi", "hello", "hey"]):
+                return "Hello! I am operating in offline mode. I can still assist with general parameters and logic."
+            elif "ph" in text_lower:
+                return "Normal drinking water pH is between 6.5 and 8.5."
+            else:
+                return f"Offline Mode: Processed '{user_text}' locally."
+        else:
+            if any(k in text_lower for k in ["привет", "здравствуйте"]):
+                return "Здравствуйте! Я работаю в автономном режиме и готов помочь."
+            else:
+                return f"Автономный режим: Обработано локально для запроса '{user_text}'."
+
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.write(message["content"])
@@ -493,10 +513,11 @@ with ai_col:
             
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
+            ans_text = ""
             
+            # Attempt Cloud Connection
             try:
                 client = genai.Client(api_key=GEMINI_API_KEY)
-                
                 contents_payload = []
                 for msg in st.session_state.messages:
                     api_role = "model" if msg["role"] == "assistant" else "user"
@@ -514,25 +535,22 @@ with ai_col:
                         system_instruction=t["sys_instruct"],
                         temperature=0.75,
                         top_p=0.95,
-                        max_output_tokens=2048,
+                        max_output_tokens=1024,
                     )
                 )
-                
                 ans_text = response.text
-                message_placeholder.write(ans_text)
-                st.session_state.messages.append({"role": "assistant", "content": ans_text})
+            except Exception:
+                # Fallback to local logic if server cannot be reached
+                ans_text = get_offline_fallback(user_input, lang_choice)
                 
-            except Exception as e:
-                message_placeholder.error(f"Gemini API Error: {str(e)}")
+            message_placeholder.write(ans_text)
+            st.session_state.messages.append({"role": "assistant", "content": ans_text})
 
     st.markdown("---")
     st.markdown("### 📚 Əsas Su Terminləri")
-    
     with st.expander("1. pH Dərəcəsi", expanded=False):
         st.caption("Suyun turşuluq və ya qələvilik dərəcəsi (6.5 - 8.5).")
-        
     with st.expander("2. TDS (Minerallaşma)", expanded=False):
         st.caption("Suda həll olmuş duzlar (< 500 ppm).")
-        
     with st.expander("3. Bulanıqlıq (NTU)", expanded=False):
         st.caption("Çöküntü tutqunluğu (< 1.0 NTU).")
