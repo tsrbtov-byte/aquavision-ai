@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
@@ -13,16 +13,34 @@ from google import genai
 from google.genai import types
 
 # ==========================================
-# 1. MÜHİT VƏ ARXA PLAN QURĞULARI
+# 1. MÜHİT, AÇAR OXUMA VƏ ARXA PLAN QURĞULARI
 # ==========================================
-GEMINI_API_KEY = os.getenv("AQ.Ab8RN6KLxY978K-Y6uFL0xdyBMPtDrWh_ZtC4jM9saTbNtP-BA", "").strip()
-
 st.set_page_config(
     page_title="AquaVision AI — Universal Engine",
     page_icon="🌊",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+
+def get_gemini_api_key() -> str:
+    # 1. Streamlit Secrets (.streamlit/secrets.toml və ya Cloud Secrets)
+    try:
+        if "GEMINI_API_KEY" in st.secrets and str(st.secrets["GEMINI_API_KEY"]).strip():
+            return str(st.secrets["GEMINI_API_KEY"]).strip()
+    except Exception:
+        pass
+
+    # 2. Sistem mühit dəyişəni (environment variable)
+    env_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if env_key:
+        return env_key
+
+    # 3. Ehtiyat: lazım olsa müvəqqəti olaraq dırnaq arasına açar yaza bilərsiniz
+    return ""
+
+
+GEMINI_API_KEY = get_gemini_api_key()
 
 st.markdown("""
     <style>
@@ -269,6 +287,7 @@ if "scan_count" not in st.session_state:
 
 st.sidebar.markdown("---")
 st.sidebar.subheader(t["sidebar_nav"])
+st.sidebar.caption(f"API Key: {'Aktiv' if GEMINI_API_KEY else 'Tapılmadı (Oflayn)'}")
 st.sidebar.markdown(f"### {t['quick_norms']}")
 st.sidebar.info(f"• {t['norm_ph']}\n• {t['norm_tds']}\n• {t['norm_turb']}")
 st.sidebar.markdown("---")
@@ -528,8 +547,8 @@ with ai_col:
                         )
                     )
                     ans_text = response.text or get_offline_fallback(user_input, lang_choice)
-                except Exception:
-                    ans_text = get_offline_fallback(user_input, lang_choice)
+                except Exception as exc:
+                    ans_text = f"Gemini API xətası: {exc}\n\n{get_offline_fallback(user_input, lang_choice)}"
             else:
                 ans_text = get_offline_fallback(user_input, lang_choice)
 
